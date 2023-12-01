@@ -9,6 +9,7 @@ import 'chatpage.dart';
 import 'profilepage.dart';
 import 'registitempage.dart';
 import 'myitem.dart';
+import 'category.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,7 +90,14 @@ class _MainPageState extends State<MainPage> {
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.menu, color: Colors.black),
-            onPressed: () async {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (BuildContext context) {
+                  return Category();
+                }),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black),

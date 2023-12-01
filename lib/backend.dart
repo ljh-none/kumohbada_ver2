@@ -100,7 +100,7 @@ class MyAuth {
     return true;
   }
 
-  Future _verifyUser(String email, String password) async {
+  Future _verifyUser(String email, String password, String nickname) async {
     try {
       UserCredential userInfo = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
@@ -109,9 +109,15 @@ class MyAuth {
         return;
       }
       _auth.currentUser!.sendEmailVerification();
+      _registUser(userInfo.user!.uid, nickname, "양호동");
     } on FirebaseAuthException catch (e) {
       print(e.code.toString());
     }
+  }
+
+  _registUser(String uid, String nickname, String location) {
+    var collection = _firestore.collection(_uri);
+    collection.add({UID: uid, NICKNAME: nickname, LOCATION: location});
   }
 
   //sign in
@@ -142,7 +148,7 @@ class MyAuth {
     if (await _isNicknameTaken(nickname)) {
       return;
     }
-    await _verifyUser(email, password);
+    await _verifyUser(email, password, nickname);
   }
 }
 
