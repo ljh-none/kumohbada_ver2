@@ -19,6 +19,9 @@ class _HomePageState extends State<HomePage> {
     Future loadMoreData(var time) async {
       print("!load More Data");
       var result = await _item.getMoreItem(time: time);
+      if (result.isEmpty) {
+        return;
+      }
       setState(() => list.addAll(result));
       print("!add ${result[0]}");
     }

@@ -234,17 +234,18 @@ class Item {
   }
 
   //내 아이템만 출력
-  Future getMyItems() async {
+  Future<List<Map<String, dynamic>>> getMyItems() async {
     List<Map<String, dynamic>> list = [];
-    var docRef = await _firestore
+    var snapshot = await _firestore
         .collection(_itemUri)
         .where(UID, isEqualTo: _myUser.getUid)
-        .orderBy(TIMESTAMP)
+        .limit(10)
         .get();
-    if (docRef.docs.isEmpty) {
-      return;
+    if (snapshot.docs.isEmpty) {
+      print("! no data");
+      return list;
     }
-    for (var doc in docRef.docs) {
+    for (var doc in snapshot.docs) {
       list.add(doc.data());
     }
     return list;
@@ -277,11 +278,10 @@ class Item {
         .get();
     for (var doc in snapshot.docs) {
       if (doc.data().isEmpty) {
-        return list;
+        return null;
       }
       list.add(doc.data());
     }
-
     return list;
   }
 }

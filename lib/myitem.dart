@@ -13,24 +13,22 @@ class MyItemPage extends StatefulWidget {
 }
 
 class _MyItemPageState extends State<MyItemPage> {
-  final Item _item = Item();
-  List<Map<String, dynamic>> list = [];
+  Item _item = Item();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('내 글 보기')),
-      body: FutureBuilder(
+      body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _item.getMyItems(),
-        builder: (BuildContext context, snapshot) {
+        builder: (context, snapshot) {
           if (snapshot.hasData) {
-            list.addAll(snapshot.data);
             return Container(
               color: Colors.white,
               child: ListView.separated(
-                itemCount: list.length,
+                itemCount: snapshot.data!.length,
                 itemBuilder: (BuildContext context, int index) {
-                  DateTime date = list[index][TIMESTAMP].toDate();
+                  DateTime date = snapshot.data![index][TIMESTAMP].toDate();
                   String formattedTime = timeago.format(date, locale: 'ko');
                   return Card(
                     elevation: 0,
@@ -38,9 +36,11 @@ class _MyItemPageState extends State<MyItemPage> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (BuildContext context) {
-                            return HomeSubPage(item: list[index]);
-                          }),
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return HomeSubPage(item: snapshot.data![index]);
+                            },
+                          ),
                         );
                       },
                       child: Padding(
@@ -50,7 +50,7 @@ class _MyItemPageState extends State<MyItemPage> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(10.0),
                               child: Image.network(
-                                list[index][IMAGE_URI] ?? '대체이미지_URL',
+                                snapshot.data![index][IMAGE_URI] ?? '대체이미지_URL',
                                 width: 100.0,
                                 height: 100.0,
                                 fit: BoxFit.cover,
@@ -62,16 +62,17 @@ class _MyItemPageState extends State<MyItemPage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    list[index][TITLE],
+                                    snapshot.data![index][TITLE],
                                     style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(height: 5),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      Text(list[index][LOCATION]),
+                                      Text(snapshot.data![index][LOCATION]),
                                       const SizedBox(width: 5),
                                       const Text('•'),
                                       const SizedBox(width: 5),
@@ -80,10 +81,11 @@ class _MyItemPageState extends State<MyItemPage> {
                                   ),
                                   const SizedBox(height: 5),
                                   Text(
-                                    '${NumberFormat('#,###', 'ko_KR').format(list[index][PRICE])}원',
+                                    '${NumberFormat('#,###', 'ko_KR').format(snapshot.data![index][PRICE])}원',
                                     style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -105,8 +107,10 @@ class _MyItemPageState extends State<MyItemPage> {
                 },
               ),
             );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No data available'));
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: Text("err!"));
           }
         },
       ),
