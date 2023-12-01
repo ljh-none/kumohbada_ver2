@@ -29,14 +29,16 @@ class _RegistItemPageState extends State<RegistItemPage> {
     String description = descriptionController.text;
 
     // 이미지, 제목, 가격, 설명, 선택된 카테고리로 새로운 Item 생성
-    await _item.registItem(
+    var result = await _item.registItem(
       image: _image!,
       title: title,
       category: _selectedCategory,
       price: int.parse(price),
       description: description,
     );
-
+    if (result == null) {
+      return;
+    }
     _returnToHomePage();
   }
 

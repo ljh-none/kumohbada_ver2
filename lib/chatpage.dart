@@ -34,6 +34,8 @@ class _ChatPageState extends State<ChatPage> {
             separatorBuilder: _buildSeparator,
             itemCount: snapshot.data.length,
           );
+        } else if (!snapshot.hasData) {
+          return const Center(child: Text("No chat exist"));
         } else {
           return const CircularProgressIndicator();
         }

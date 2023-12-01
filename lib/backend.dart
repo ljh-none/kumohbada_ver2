@@ -214,8 +214,14 @@ class Item {
       required String description}) async {
     var collection = _getCollection(); //아이템 정보 등록할 firestore
     String url = await _registImage(image);
+    String? location = _myUser.getLocation;
+    String? nickname = _myUser.getNickname;
+    String? uid = _myUser.getUid;
+    if (location == null || nickname == null || uid == null) {
+      return;
+    }
     Map<String, dynamic> item = {
-      UID: _myUser.getUid,
+      UID: uid,
       ITEMID: _getUuid(),
       IMAGE_URI: url,
       TITLE: title,
@@ -223,8 +229,8 @@ class Item {
       PRICE: price,
       DESCRIPTION: description,
       TIMESTAMP: FieldValue.serverTimestamp(),
-      REGISTER: _myUser.getNickname,
-      LOCATION: _myUser.getLocation,
+      REGISTER: nickname,
+      LOCATION: location,
     };
     collection.add(item);
   }
