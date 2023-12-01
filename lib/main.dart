@@ -5,6 +5,10 @@ import 'package:kumohbada_ver2/firebase_options.dart';
 import 'login.dart';
 import 'backend.dart';
 import 'homepage.dart';
+import 'chatpage.dart';
+import 'profilepage.dart';
+import 'registitempage.dart';
+import 'myitem.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,7 +62,9 @@ class _MainPageState extends State<MainPage> {
     }
 
     List<Widget> tabs = [
-      HomePage(),
+      const HomePage(),
+      const ChatPage(),
+      const ProfilePage(),
     ];
 
     return Scaffold(
@@ -111,14 +117,27 @@ class _MainPageState extends State<MainPage> {
               children: [
                 if (_showAdditionalButtons)
                   FloatingActionButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return MyItemPage();
+                        },
+                      ));
+                    },
                     tooltip: '내 글 보기',
                     child: const Icon(Icons.notes),
                   ),
                 const SizedBox(height: 16.0),
                 if (_showAdditionalButtons)
                   FloatingActionButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (BuildContext context) {
+                          return RegistItemPage();
+                        }),
+                      );
+                    },
                     tooltip: '글쓰기',
                     child: const Icon(Icons.edit_sharp),
                   ),

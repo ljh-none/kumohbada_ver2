@@ -1,42 +1,35 @@
 import 'package:flutter/material.dart';
-import 'backend.dart';
 import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+import 'backend.dart';
+import 'homepage.dart';
+
+class MyItemPage extends StatefulWidget {
+  const MyItemPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MyItemPage> createState() => _MyItemPageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  Item _item = Item();
-  List<Map<String, dynamic>> list = []; //홈 화면에서 출력 중인 아이템 리스트
+class _MyItemPageState extends State<MyItemPage> {
+  final Item _item = Item();
+  List<Map<String, dynamic>> list = [];
 
   @override
   Widget build(BuildContext context) {
-    Future loadMoreData(var time) async {
-      print("!load More Data");
-      var result = await _item.getMoreItem(time: time);
-      setState(() => list.addAll(result));
-      print("!add ${result[0]}");
-    }
-
-    return FutureBuilder(
-        future: _item.startItemStream(),
+    return Scaffold(
+      appBar: AppBar(title: const Text('내 글 보기')),
+      body: FutureBuilder(
+        future: _item.getMyItems(),
         builder: (BuildContext context, snapshot) {
           if (snapshot.hasData) {
-            list.addAll(snapshot.data!);
+            list.addAll(snapshot.data);
             return Container(
               color: Colors.white,
               child: ListView.separated(
                 itemCount: list.length,
                 itemBuilder: (BuildContext context, int index) {
-                  if (index == list.length - 1) {
-                    //스크롤 무한로딩
-                    loadMoreData(list[index][TIMESTAMP]);
-                  }
                   DateTime date = list[index][TIMESTAMP].toDate();
                   String formattedTime = timeago.format(date, locale: 'ko');
                   return Card(
@@ -115,99 +108,7 @@ class _HomePageState extends State<HomePage> {
           } else {
             return const Center(child: CircularProgressIndicator());
           }
-        });
-  }
-}
-
-class HomeSubPage extends StatelessWidget {
-  Map<String, dynamic> item;
-  HomeSubPage({Key? key, required this.item}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(item[TITLE]),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: Container(
-        color: Colors.white,
-        child: ListView.separated(
-          itemCount: 3,
-          itemBuilder: (context, index) {
-            if (index == 0) {
-              return Image.network(item[IMAGE_URI]);
-            } else if (index == 1) {
-              return Card(
-                elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.white,
-                      backgroundImage: NetworkImage(item[IMAGE_URI]),
-                    ),
-                    SizedBox(width: 8.0),
-                    Column(children: [
-                      Text(item[REGISTER],
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text(item[LOCATION]),
-                    ]),
-                    const Spacer(),
-                    Column(children: [
-                      Row(
-                        children: List.generate(
-                            5, // 별점을 표시하는 부분은 어떻게 처리할지 알려주셔야 합니다.
-                            (index) => Icon(Icons.star, color: Colors.orange)),
-                      ),
-                      Text(timeago.format(
-                        item[TIMESTAMP].toDate(),
-                        locale: 'ko',
-                      )),
-                    ]),
-                  ]),
-                ),
-              );
-            } else {
-              return Card(
-                elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Text(item[DESCRIPTION]),
-                ),
-              );
-            }
-          },
-          separatorBuilder: (context, index) {
-            return const Divider(
-              color: Color.fromARGB(255, 211, 211, 211),
-              thickness: 1,
-              indent: 20,
-              endIndent: 20,
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
-            children: [
-              Text(
-                  '가격 : ${NumberFormat('#,###', 'ko_KR').format(item[PRICE])}원'),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () {},
-                child: const Text("채팅하기"),
-              )
-            ],
-          ),
-        ),
+        },
       ),
     );
   }
