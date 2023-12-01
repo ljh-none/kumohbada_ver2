@@ -1,0 +1,105 @@
+{
+  "project_info": {
+    "project_number": "296425154517",
+    "project_id": "ljh-firebase-for-flutter",
+    "storage_bucket": "ljh-firebase-for-flutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296425154517:android:e7079b46185e7345f3bf5c",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_test"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzHXW4XTy7YjI8QXtUHnWmYCew4pRT3AQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296425154517:android:b2366064e2ed916ff3bf5c",
+        "android_client_info": {
+          "package_name": "com.example.flutter_chat_with_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzHXW4XTy7YjI8QXtUHnWmYCew4pRT3AQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296425154517:android:7914af67f4e005bef3bf5c",
+        "android_client_info": {
+          "package_name": "com.example.flutter_load_database_demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzHXW4XTy7YjI8QXtUHnWmYCew4pRT3AQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296425154517:android:6626bd8cb7c5ea7cf3bf5c",
+        "android_client_info": {
+          "package_name": "com.example.kumohbada"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzHXW4XTy7YjI8QXtUHnWmYCew4pRT3AQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296425154517:android:d9a036705672eb4af3bf5c",
+        "android_client_info": {
+          "package_name": "com.example.kumohbada_ver2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzHXW4XTy7YjI8QXtUHnWmYCew4pRT3AQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

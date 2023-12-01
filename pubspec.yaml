@@ -1,0 +1,27 @@
+name: kumohbada_ver2
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  cloud_firestore: ^4.13.3
+  firebase_auth: ^4.15.0
+  firebase_core: ^2.24.0
+  firebase_storage: ^11.5.3
+  flutter:
+    sdk: flutter
+  image_picker: ^1.0.4
+  intl: ^0.18.1
+  timeago: ^3.6.0
+  uuid: ^4.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
