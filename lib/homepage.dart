@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'backend.dart';
 import 'package:intl/intl.dart';
+import 'package:kumohbada_ver2/chatpage.dart';
 import 'package:timeago/timeago.dart' as timeago;
+
+import 'backend.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -122,16 +124,21 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomeSubPage extends StatelessWidget {
+class HomeSubPage extends StatefulWidget {
   Map<String, dynamic> item;
   HomeSubPage({Key? key, required this.item}) : super(key: key);
 
+  @override
+  State<HomeSubPage> createState() => _HomeSubPageState();
+}
+
+class _HomeSubPageState extends State<HomeSubPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(item[TITLE]),
+        title: Text(widget.item[TITLE]),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -142,7 +149,7 @@ class HomeSubPage extends StatelessWidget {
           itemCount: 3,
           itemBuilder: (context, index) {
             if (index == 0) {
-              return Image.network(item[IMAGE_URI]);
+              return Image.network(widget.item[IMAGE_URI]);
             } else if (index == 1) {
               return Card(
                 elevation: 0,
@@ -151,14 +158,14 @@ class HomeSubPage extends StatelessWidget {
                   child: Row(children: [
                     CircleAvatar(
                       backgroundColor: Colors.white,
-                      backgroundImage: NetworkImage(item[IMAGE_URI]),
+                      backgroundImage: NetworkImage(widget.item[IMAGE_URI]),
                     ),
                     SizedBox(width: 8.0),
                     Column(children: [
-                      Text(item[REGISTER],
+                      Text(widget.item[REGISTER],
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text(item[LOCATION]),
+                      Text(widget.item[LOCATION]),
                     ]),
                     const Spacer(),
                     Column(children: [
@@ -168,7 +175,7 @@ class HomeSubPage extends StatelessWidget {
                             (index) => Icon(Icons.star, color: Colors.orange)),
                       ),
                       Text(timeago.format(
-                        item[TIMESTAMP].toDate(),
+                        widget.item[TIMESTAMP].toDate(),
                         locale: 'ko',
                       )),
                     ]),
@@ -180,7 +187,7 @@ class HomeSubPage extends StatelessWidget {
                 elevation: 0,
                 child: Padding(
                   padding: const EdgeInsets.all(15.0),
-                  child: Text(item[DESCRIPTION]),
+                  child: Text(widget.item[DESCRIPTION]),
                 ),
               );
             }
@@ -202,10 +209,29 @@ class HomeSubPage extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                  '가격 : ${NumberFormat('#,###', 'ko_KR').format(item[PRICE])}원'),
+                  '가격 : ${NumberFormat('#,###', 'ko_KR').format(widget.item[PRICE])}원'),
               const Spacer(),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Chat chat = Chat();
+                  String? myuid = MyUser.instance.getUid;
+                  if (myuid! == widget.item[UID]) {
+                    return;
+                  } else {
+                    print("!!my nick : ${widget.item[NICKNAME]}");
+                    print("!!my uid : ${widget.item[UID]}");
+                    print("!!my item : ${widget.item[ITEMID]}");
+                    chat.createChattingRoom(
+                      receiver: widget.item[REGISTER],
+                      receiveruid: widget.item[UID],
+                      itemId: widget.item[ITEMID],
+                    );
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (BuildContext context) {
+                      return ChatSubPage(widget.item[ITEMID]);
+                    }));
+                  }
+                },
                 child: const Text("채팅하기"),
               )
             ],

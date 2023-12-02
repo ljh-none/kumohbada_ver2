@@ -26,6 +26,8 @@ const String ITEMID = "itemid";
 const String CONTENT = "content";
 const String SENDER = "sender";
 const String RECEIVER = "receiver";
+const String SENDER_UID = "sender_uid";
+const String RECEIVER_UID = "receiver_uid";
 
 //지역 리스트
 const List<String> availableLocations = [
@@ -218,10 +220,10 @@ class Item {
     String? nickname = _myUser.getNickname;
     String? uid = _myUser.getUid;
     if (location == null || nickname == null || uid == null) {
-      return;
+      false;
     }
     Map<String, dynamic> item = {
-      UID: uid,
+      UID: uid, //등록자의 uid
       ITEMID: _getUuid(),
       IMAGE_URI: url,
       TITLE: title,
@@ -233,6 +235,7 @@ class Item {
       LOCATION: location,
     };
     collection.add(item);
+    return true;
   }
 
   //이미지 선택 함수
@@ -309,40 +312,79 @@ class Chat {
   //문서 내에는 발신자, 송신자 필드와 채팅 로그 저장을 위한 컬렉션이 있음.
   //채팅 로그 컬렉션에는 여러 문서들이 있는데, 그 문서 하나하나가 메시지임.
 
-  //활성화 중인 채팅창 리스트 출력을 위해
-  Future showChatList() async {
+  _getSenderIsMe() async {
+    List<Map<String, dynamic>> list = [];
+
     var docRef = await _firestore
         .collection(_baseUrl)
-        .where(SENDER, isEqualTo: myUser.getNickname)
+        .where(SENDER_UID, isEqualTo: myUser.getUid)
         .get();
 
-    if (docRef.docs.isEmpty) return;
-
-    List<Map<String, dynamic>> list = [];
-    for (var doc in docRef.docs) {
-      list.add(doc.data());
+    if (docRef.docs.isEmpty) {
+      print("sender docs empty");
+      return list;
+    } else {
+      print("All Documents: ${docRef.docs.map((doc) => doc.data())}");
+      for (var doc in docRef.docs) {
+        list.add(doc.data());
+        print(doc.data());
+      }
     }
+
+    return list;
+  }
+
+  _getReceiverIsMe() async {
+    List<Map<String, dynamic>> list = [];
+
+    var docRef = await _firestore
+        .collection(_baseUrl)
+        .where(RECEIVER_UID, isEqualTo: myUser.getUid)
+        .get();
+
+    if (docRef.docs.isEmpty) {
+      print("receiver docs empty");
+      return list;
+    } else {
+      print("All Documents: ${docRef.docs.map((doc) => doc.data())}");
+      for (var doc in docRef.docs) {
+        list.add(doc.data());
+        print(doc.data());
+      }
+    }
+
+    return list;
+  }
+
+  //활성화 중인 채팅창 리스트 출력을 위해
+  Future showChatList() async {
+    print("current user : ${myUser.getUid}");
+    List<Map<String, dynamic>> list = [];
+    list.addAll(await _getSenderIsMe());
+    list.addAll(await _getReceiverIsMe());
     return list;
   }
 
   //채팅창 리스트에서 요소 클릭 시 채팅방으로 넘어갈 때
-  getChattingRoom({required String receiver}) {
-    CollectionReference collection = _firestore
-        .collection(_baseUrl)
-        .doc("${myUser.getNickname}_$receiver")
-        .collection(_log);
+  getChattingRoom({required String itemid}) {
+    CollectionReference collection =
+        _firestore.collection(_baseUrl).doc(itemid).collection(_log);
     return collection;
   }
 
   //채팅하기 버튼 클릭 시 채팅방 생성할 때
-  createChattingRoom({required String receiver, required String itemId}) {
-    _firestore
-        .collection(_baseUrl)
-        .doc("${myUser.getNickname}_$receiver")
-        .collection(_log);
-    _firestore
-        .collection(_baseUrl)
-        .doc("${myUser.getNickname}_$receiver")
-        .set({SENDER: myUser.getNickname, RECEIVER: receiver, ITEMID: itemId});
+  createChattingRoom(
+      {required String receiver,
+      required String receiveruid,
+      required String itemId}) {
+    _firestore.collection(_baseUrl).doc(itemId).collection(_log);
+
+    _firestore.collection(_baseUrl).doc(itemId).set({
+      SENDER: myUser.getNickname,
+      SENDER_UID: myUser.getUid,
+      RECEIVER: receiver,
+      RECEIVER_UID: receiveruid,
+      ITEMID: itemId
+    });
   }
 }

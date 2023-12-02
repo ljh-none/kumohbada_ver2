@@ -1,3 +1,6 @@
 # kumohbada_ver2
 
-A new Flutter project.
+
+documentReference = collection().where().get();일 때,
+documentReference : jsonquery snapshot
+documentReference.docs : jsonquery document snapshot
