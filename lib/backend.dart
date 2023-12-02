@@ -94,7 +94,7 @@ class MyAuth {
     return data;
   }
 
-  _isNicknameTaken(String nickname) async {
+  isNicknameTaken(String nickname) async {
     var data = await _getDocs(NICKNAME, nickname);
     if (data == null || data.isEmpty) {
       return false;
@@ -147,7 +147,7 @@ class MyAuth {
       {required String email,
       required String password,
       required String nickname}) async {
-    if (await _isNicknameTaken(nickname)) {
+    if (await isNicknameTaken(nickname)) {
       return;
     }
     await _verifyUser(email, password, nickname);
