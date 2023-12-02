@@ -212,25 +212,26 @@ class _HomeSubPageState extends State<HomeSubPage> {
                   '가격 : ${NumberFormat('#,###', 'ko_KR').format(widget.item[PRICE])}원'),
               const Spacer(),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   Chat chat = Chat();
                   String? myuid = MyUser.instance.getUid;
                   if (myuid! == widget.item[UID]) {
                     return;
-                  } else {
-                    print("!!my nick : ${widget.item[NICKNAME]}");
-                    print("!!my uid : ${widget.item[UID]}");
-                    print("!!my item : ${widget.item[ITEMID]}");
-                    chat.createChattingRoom(
+                  } else if (await chat.noRoomExist(
+                      itemid: widget.item[ITEMID])) {
+                    await chat.createChattingRoom(
                       receiver: widget.item[REGISTER],
                       receiveruid: widget.item[UID],
                       itemId: widget.item[ITEMID],
                     );
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (BuildContext context) {
-                      return ChatSubPage(widget.item[ITEMID]);
-                    }));
                   }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) =>
+                          ChatSubPage(widget.item[ITEMID]),
+                    ),
+                  );
                 },
                 child: const Text("채팅하기"),
               )
