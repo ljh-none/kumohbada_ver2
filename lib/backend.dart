@@ -372,13 +372,24 @@ class Chat {
     return collection;
   }
 
+  //채팅방이 이미 존재할 경우
+  noRoomExist({required String itemid}) async {
+    var docRef = await _firestore
+        .collection(_baseUrl)
+        .where(ITEMID, isEqualTo: itemid)
+        .get();
+    if (docRef.docs.isEmpty) {
+      return true;
+    }
+    return false;
+  }
+
   //채팅하기 버튼 클릭 시 채팅방 생성할 때
   createChattingRoom(
       {required String receiver,
       required String receiveruid,
       required String itemId}) {
     _firestore.collection(_baseUrl).doc(itemId).collection(_log);
-
     _firestore.collection(_baseUrl).doc(itemId).set({
       SENDER: myUser.getNickname,
       SENDER_UID: myUser.getUid,
