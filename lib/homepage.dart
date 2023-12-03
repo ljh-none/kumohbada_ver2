@@ -218,7 +218,8 @@ class _HomeSubPageState extends State<HomeSubPage> {
                   if (myuid! == widget.item[UID]) {
                     return;
                   } else if (await chat.noRoomExist(
-                      receiveruid: widget.item[UID])) {
+                      receiveruid: widget.item[UID],
+                      itemid: widget.item[ITEMID])) {
                     await chat.createChattingRoom(
                       receiver: widget.item[REGISTER],
                       receiveruid: widget.item[UID],

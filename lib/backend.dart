@@ -392,10 +392,10 @@ class Chat {
   }
 
   //채팅방이 이미 존재할 경우
-  noRoomExist({required String receiveruid}) async {
+  noRoomExist({required String receiveruid, required String itemid}) async {
     var docRef = await _firestore
         .collection(_baseUrl)
-        .doc("${myUser.getUid}_$receiveruid")
+        .doc("${myUser.getUid}_${receiveruid}_$itemid")
         .get();
     if (docRef.data() == null || docRef.data()!.isEmpty) {
       print("no chat Room here!");
@@ -411,7 +411,7 @@ class Chat {
       required String itemId}) {
     _firestore
         .collection(_baseUrl)
-        .doc("${myUser.getUid}_$receiveruid")
+        .doc("${myUser.getUid}_${receiveruid}_$itemId")
         .collection(_log);
     _firestore.collection(_baseUrl).doc("${myUser.getUid}_$receiveruid").set({
       SENDER: myUser.getNickname,
