@@ -10,6 +10,7 @@ import 'profilepage.dart';
 import 'registitempage.dart';
 import 'myitem.dart';
 import 'category.dart';
+import 'search.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -101,7 +102,14 @@ class _MainPageState extends State<MainPage> {
           ),
           IconButton(
             icon: const Icon(Icons.search, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (BuildContext context) {
+                  return SearchPage();
+                }),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.notifications, color: Colors.black),

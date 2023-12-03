@@ -254,7 +254,6 @@ class Item {
     var snapshot = await _firestore
         .collection(_itemUri)
         .where(UID, isEqualTo: _myUser.getUid)
-        .limit(10)
         .get();
     if (snapshot.docs.isEmpty) {
       print("! no data");
@@ -295,6 +294,26 @@ class Item {
       if (doc.data().isEmpty) {
         return null;
       }
+      list.add(doc.data());
+    }
+    return list;
+  }
+
+  Future searchItem({required String? str}) async {
+    if (str == null) {
+      return;
+    }
+    print(str);
+    List<Map<String, dynamic>> list = [];
+    var snapshot = await _firestore
+        .collection(_itemUri)
+        .where(TITLE, whereIn: [str]).get();
+
+    if (snapshot.docs.isEmpty) {
+      print("! no data");
+      return list;
+    }
+    for (var doc in snapshot.docs) {
       list.add(doc.data());
     }
     return list;
@@ -373,12 +392,13 @@ class Chat {
   }
 
   //채팅방이 이미 존재할 경우
-  noRoomExist({required String itemid}) async {
+  noRoomExist({required String receiveruid}) async {
     var docRef = await _firestore
         .collection(_baseUrl)
-        .where(ITEMID, isEqualTo: itemid)
+        .doc("${myUser.getUid}_$receiveruid")
         .get();
-    if (docRef.docs.isEmpty) {
+    if (docRef.data() == null || docRef.data()!.isEmpty) {
+      print("no chat Room here!");
       return true;
     }
     return false;
@@ -389,8 +409,11 @@ class Chat {
       {required String receiver,
       required String receiveruid,
       required String itemId}) {
-    _firestore.collection(_baseUrl).doc(itemId).collection(_log);
-    _firestore.collection(_baseUrl).doc(itemId).set({
+    _firestore
+        .collection(_baseUrl)
+        .doc("${myUser.getUid}_$receiveruid")
+        .collection(_log);
+    _firestore.collection(_baseUrl).doc("${myUser.getUid}_$receiveruid").set({
       SENDER: myUser.getNickname,
       SENDER_UID: myUser.getUid,
       RECEIVER: receiver,
