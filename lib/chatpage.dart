@@ -25,7 +25,8 @@ class _ChatPageState extends State<ChatPage> {
                 onTap: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (BuildContext context) {
-                    return ChatSubPage(snapshot.data[index][ITEMID]);
+                    return ChatSubPage(
+                        snapshot.data[index], snapshot.data[index][SENDER_UID]);
                   }));
                 },
                 child: Card(child: Text(snapshot.data[index][ITEMID])),
@@ -54,14 +55,16 @@ class _ChatPageState extends State<ChatPage> {
 }
 
 class ChatSubPage extends StatefulWidget {
-  String? itemId;
-  ChatSubPage(data, {super.key}) {
-    itemId = data;
+  Map<String, dynamic>? _item;
+  String? _senderUid;
+  ChatSubPage(item, senderUid, {super.key}) {
+    _item = item;
+    _senderUid = senderUid;
   }
 
   @override
   State<ChatSubPage> createState() {
-    return _ChatSubPageState(itemId);
+    return _ChatSubPageState();
   }
 }
 
@@ -69,11 +72,7 @@ class _ChatSubPageState extends State<ChatSubPage> {
   TextEditingController txtcontrollor = TextEditingController();
   final MyUser _myUser = MyUser.instance;
   final Chat _chat = Chat();
-  late final String? _itemId;
-
-  _ChatSubPageState(String? receiver) {
-    _itemId = receiver;
-  }
+  var chatRoom;
 
   Widget buildChatContent(context, AsyncSnapshot<QuerySnapshot> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -100,12 +99,27 @@ class _ChatSubPageState extends State<ChatSubPage> {
     );
   }
 
+  _initChatRoom() async {
+    var result = await _chat.getChattingRoom(
+        item: widget._item!, senderUid: widget._senderUid!);
+    setState(() {
+      chatRoom = result;
+    });
+  }
+
+  @override
+  initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      _initChatRoom();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     //navigator push로 정보를 가져온다. 어떤 방식이든 상관없다.
     //아이템 정보 전체이든, 등록자 uid이든 상대방 유저의 uid만 있으면 됨.
     //상대방 uid를 otherUid 파라미터에 넣으면 채팅방 생성 및 로드 가능.
-    var chatRoom = _chat.getChattingRoom(itemid: _itemId!);
 
     Future<void> sendMessage() async {
       await chatRoom.add({

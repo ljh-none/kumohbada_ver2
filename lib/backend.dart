@@ -385,40 +385,45 @@ class Chat {
   }
 
   //채팅창 리스트에서 요소 클릭 시 채팅방으로 넘어갈 때
-  getChattingRoom({required String itemid}) {
-    CollectionReference collection =
-        _firestore.collection(_baseUrl).doc(itemid).collection(_log);
+  getChattingRoom(
+      {required Map<String, dynamic> item, required String senderUid}) async {
+    var result = await _firestore
+        .collection(_baseUrl)
+        .where(ITEMID, isEqualTo: item[ITEMID])
+        .where(SENDER_UID, isEqualTo: senderUid)
+        .get();
+
+    DocumentReference docRef = result.docs[0].reference;
+    CollectionReference collection = docRef.collection(_log);
     return collection;
   }
 
   //채팅방이 이미 존재할 경우
-  noRoomExist({required String receiveruid, required String itemid}) async {
+  checkRoomExist({required Map<String, dynamic> item}) async {
     var docRef = await _firestore
         .collection(_baseUrl)
-        .doc("${myUser.getUid}_${receiveruid}_$itemid")
+        .doc("${myUser.getUid}_${item[UID]}_${item[ITEMID]}")
         .get();
+
     if (docRef.data() == null || docRef.data()!.isEmpty) {
       print("no chat Room here!");
-      return true;
+      return false;
     }
-    return false;
+    return true;
   }
 
   //채팅하기 버튼 클릭 시 채팅방 생성할 때
-  createChattingRoom(
-      {required String receiver,
-      required String receiveruid,
-      required String itemId}) {
-    _firestore
+  createChattingRoom({required Map<String, dynamic> item}) async {
+    await _firestore
         .collection(_baseUrl)
-        .doc("${myUser.getUid}_${receiveruid}_$itemId")
-        .collection(_log);
-    _firestore.collection(_baseUrl).doc("${myUser.getUid}_$receiveruid").set({
+        .doc("${myUser.getUid}_${item[UID]}_${item[ITEMID]}")
+        .set({
       SENDER: myUser.getNickname,
       SENDER_UID: myUser.getUid,
-      RECEIVER: receiver,
-      RECEIVER_UID: receiveruid,
-      ITEMID: itemId
+      RECEIVER: item[REGISTER],
+      RECEIVER_UID: item[UID],
+      ITEMID: item[ITEMID],
     });
+    print("create chat room");
   }
 }

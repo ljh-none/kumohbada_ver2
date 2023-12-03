@@ -133,6 +133,9 @@ class HomeSubPage extends StatefulWidget {
 }
 
 class _HomeSubPageState extends State<HomeSubPage> {
+  final MyUser _myUser = MyUser.instance;
+  Chat _chat = Chat();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,25 +216,19 @@ class _HomeSubPageState extends State<HomeSubPage> {
               const Spacer(),
               ElevatedButton(
                 onPressed: () async {
-                  Chat chat = Chat();
-                  String? myuid = MyUser.instance.getUid;
-                  if (myuid! == widget.item[UID]) {
+                  if (_myUser.getUid == widget.item[UID]) {
                     return;
-                  } else if (await chat.noRoomExist(
-                      receiveruid: widget.item[UID],
-                      itemid: widget.item[ITEMID])) {
-                    await chat.createChattingRoom(
-                      receiver: widget.item[REGISTER],
-                      receiveruid: widget.item[UID],
-                      itemId: widget.item[ITEMID],
-                    );
+                  }
+                  var result = await _chat.checkRoomExist(item: widget.item);
+                  if (!result) {
+                    //챗방이 없을 때
+                    await _chat.createChattingRoom(item: widget.item);
                   }
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) =>
-                          ChatSubPage(widget.item[ITEMID]),
-                    ),
+                    MaterialPageRoute(builder: (BuildContext context) {
+                      return ChatSubPage(widget.item, _myUser.getUid);
+                    }),
                   );
                 },
                 child: const Text("채팅하기"),
