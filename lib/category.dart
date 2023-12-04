@@ -26,12 +26,16 @@ class Category extends StatelessWidget {
             title: Text(category),
             onTap: () {
               context.read<MyCategory>().changeCategory(category: category);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (BuildContext context) {
-                  return CategorySubPage();
-                }),
-              );
+              if (category == "전체") {
+                Navigator.pop(context);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (BuildContext context) {
+                    return CategorySubPage();
+                  }),
+                );
+              }
             },
           );
         },
@@ -60,84 +64,89 @@ class _CategorySubPageState extends State<CategorySubPage> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return Container(
-          color: Colors.white,
-          child: ListView.separated(
-            itemCount: snapshot.data.length,
-            itemBuilder: (BuildContext context, int index) {
-              DateTime date = snapshot.data[index][TIMESTAMP].toDate();
-              String formattedTime = timeago.format(date, locale: 'ko');
+        return Scaffold(
+          appBar: AppBar(title: Text(context.watch<MyCategory>().getCategory)),
+          body: Container(
+            color: Colors.white,
+            child: ListView.separated(
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                DateTime date = snapshot.data[index][TIMESTAMP].toDate();
+                String formattedTime = timeago.format(date, locale: 'ko');
 
-              return Card(
-                elevation: 0,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (BuildContext context) {
-                          return HomeSubPage(item: snapshot.data[index]);
-                        },
+                return Card(
+                  elevation: 0,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) {
+                            return HomeSubPage(item: snapshot.data[index]);
+                          },
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        children: <Widget>[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Image.network(
+                              snapshot.data[index][IMAGE_URI] ?? '대체이미지_URL',
+                              width: 100.0,
+                              height: 100.0,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  snapshot.data[index][TITLE],
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(snapshot.data[index][LOCATION]),
+                                    const SizedBox(width: 5),
+                                    const Text('•'),
+                                    const SizedBox(width: 5),
+                                    Text(formattedTime),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  '${NumberFormat('#,###', 'ko_KR').format(snapshot.data[index][PRICE])}원',
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: Row(
-                      children: <Widget>[
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10.0),
-                          child: Image.network(
-                            snapshot.data[index][IMAGE_URI] ?? '대체이미지_URL',
-                            width: 100.0,
-                            height: 100.0,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        const SizedBox(width: 30),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                snapshot.data[index][TITLE],
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 5),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(snapshot.data[index][LOCATION]),
-                                  const SizedBox(width: 5),
-                                  const Text('•'),
-                                  const SizedBox(width: 5),
-                                  Text(formattedTime),
-                                ],
-                              ),
-                              const SizedBox(height: 5),
-                              Text(
-                                '${NumberFormat('#,###', 'ko_KR').format(snapshot.data[index][PRICE])}원',
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                ),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) {
-              return Divider(
-                height: 1,
-                color: const Color.fromARGB(136, 73, 73, 73).withOpacity(1),
-                indent: 16, // 시작 부분의 공백
-                endIndent: 16, // 끝 부분의 공백
-              );
-            },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider(
+                  height: 1,
+                  color: const Color.fromARGB(136, 73, 73, 73).withOpacity(1),
+                  indent: 16, // 시작 부분의 공백
+                  endIndent: 16, // 끝 부분의 공백
+                );
+              },
+            ),
           ),
         );
       },

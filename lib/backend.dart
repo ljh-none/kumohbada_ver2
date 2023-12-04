@@ -432,10 +432,9 @@ class Item {
     QuerySnapshot snapshot = await _firestore
         .collection(_itemUri)
         .where(CATEGORY, isEqualTo: category)
-        .orderBy(TIMESTAMP)
         .get();
 
-    return snapshot.docs.first;
+    return snapshot.docs;
   }
 }
 
