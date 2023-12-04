@@ -13,7 +13,6 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   Chat _chat = Chat();
-  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _chat.showChatList(),
@@ -29,7 +28,12 @@ class _ChatPageState extends State<ChatPage> {
                         snapshot.data[index], snapshot.data[index][SENDER_UID]);
                   }));
                 },
-                child: Card(child: Text(snapshot.data[index][ITEMID])),
+                child: ListTile(
+                  leading: Icon(Icons.chat), // Add an icon for each chat item
+                  title: Text(snapshot.data[index][RECEIVER]),
+                  subtitle: Text(
+                      'Last message...'), // Add a placeholder for the last message
+                ),
               );
             },
             separatorBuilder: _buildSeparator,
@@ -90,10 +94,44 @@ class _ChatSubPageState extends State<ChatSubPage> {
       itemBuilder: (context, index) {
         var doc = snapshot.data!.docs[index];
         var data = doc.data() as Map<String, dynamic>;
-        return ListTile(
-          title: Text(data[CONTENT]),
-          subtitle: Text(data[SENDER]),
-        );
+        print("${data[SENDER_UID]}___${_myUser.getUid}");
+        if (data[SENDER] == _myUser.getNickname) {
+          return Row(children: [
+            const Spacer(),
+            Container(
+                padding: const EdgeInsets.all(10.0),
+                margin: const EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 20.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Text(
+                  data[CONTENT],
+                  style: const TextStyle(color: Colors.white, fontSize: 16.0),
+                )),
+          ]);
+        } else {
+          return Row(children: [
+            Container(
+                padding: const EdgeInsets.all(10.0),
+                margin: const EdgeInsets.symmetric(
+                  vertical: 10.0,
+                  horizontal: 20.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                child: Text(
+                  data[CONTENT],
+                  style: const TextStyle(color: Colors.white, fontSize: 16.0),
+                )),
+            const Spacer(),
+          ]);
+        }
       },
     );
   }
@@ -105,28 +143,49 @@ class _ChatSubPageState extends State<ChatSubPage> {
     //상대방 uid를 otherUid 파라미터에 넣으면 채팅방 생성 및 로드 가능.
 
     return Scaffold(
-      appBar: AppBar(title: const Text("chat")),
+      appBar: AppBar(title: Text("Chat")),
       body: StreamBuilder(
         stream: _chat.getChatStream(
             item: widget._item!, senderUid: widget._senderUid!),
         builder: buildChatContent,
       ),
-      bottomNavigationBar: Row(children: [
-        Expanded(
-          child: TextField(
-            controller: txtcontrollor,
-            decoration: const InputDecoration(
-              labelText: "input",
-              border: OutlineInputBorder(),
+      bottomNavigationBar: Padding(
+        padding:
+            const EdgeInsets.all(10.0), // Add padding around the text field
+        child: Row(children: [
+          Expanded(
+            child: TextField(
+              controller: txtcontrollor,
+              decoration: const InputDecoration(
+                labelText: "텍스트를 입력하세요",
+                border: OutlineInputBorder(),
+                fillColor: Colors.white,
+                filled: true,
+              ),
+              onSubmitted: (text) {
+                // Send the message when the enter key is pressed
+                _chat.sendMessage(msg: txtcontrollor.text);
+                txtcontrollor.clear();
+              },
             ),
           ),
-        ),
-        ElevatedButton(
-            onPressed: () async {
-              await _chat.sendMessage(msg: txtcontrollor.text);
-            },
-            child: const Text("send"))
-      ]),
+          const SizedBox(width: 10.0),
+          ElevatedButton(
+            onPressed: () {
+              _chat.sendMessage(msg: txtcontrollor.text);
+              txtcontrollor.clear();
+            }, // Use arrow icon instead of text
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(2.0),
+                ),
+              ),
+            ),
+            child: const Icon(Icons.send),
+          )
+        ]),
+      ),
     );
   }
 }

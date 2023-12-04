@@ -377,13 +377,10 @@ class Chat {
         .get();
 
     if (docRef.docs.isEmpty) {
-      print("sender docs empty");
       return list;
     } else {
-      print("All Documents: ${docRef.docs.map((doc) => doc.data())}");
       for (var doc in docRef.docs) {
         list.add(doc.data());
-        print(doc.data());
       }
     }
 
@@ -399,13 +396,10 @@ class Chat {
         .get();
 
     if (docRef.docs.isEmpty) {
-      print("receiver docs empty");
       return list;
     } else {
-      print("All Documents: ${docRef.docs.map((doc) => doc.data())}");
       for (var doc in docRef.docs) {
         list.add(doc.data());
-        print(doc.data());
       }
     }
 
@@ -414,7 +408,6 @@ class Chat {
 
   //활성화 중인 채팅창 리스트 출력을 위해
   Future showChatList() async {
-    print("current user : ${myUser.getUid}");
     List<Map<String, dynamic>> list = [];
     list.addAll(await _getSenderIsMe());
     list.addAll(await _getReceiverIsMe());
@@ -455,7 +448,6 @@ class Chat {
         .get();
 
     if (docRef.data() == null || docRef.data()!.isEmpty) {
-      print("no chat Room here!");
       return false;
     }
     return true;
@@ -473,6 +465,5 @@ class Chat {
       RECEIVER_UID: item[UID],
       ITEMID: item[ITEMID],
     });
-    print("create chat room");
   }
 }
