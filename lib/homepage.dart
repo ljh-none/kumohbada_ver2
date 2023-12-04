@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kumohbada_ver2/chatpage.dart';
+import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 import 'backend.dart';
@@ -44,6 +45,17 @@ class _HomePageState extends State<HomePage> {
                   }
                   DateTime date = list[index][TIMESTAMP].toDate();
                   String formattedTime = timeago.format(date, locale: 'ko');
+                  if (context.watch<MyCategory>().getCategory != "전체" &&
+                      context.watch<MyLocation>().getLocation !=
+                          list[index][LOCATION]) {
+                    return Container();
+                  }
+                  if (context.watch<MyCategory>().getCategory != "전체" &&
+                      context.watch<MyCategory>().getCategory !=
+                          list[index][CATEGORY]) {
+                    return Container();
+                  }
+
                   return Card(
                     elevation: 0,
                     child: InkWell(

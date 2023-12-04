@@ -12,6 +12,7 @@ import 'registitempage.dart';
 import 'myitem.dart';
 import 'category.dart';
 import 'search.dart';
+import 'alert.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,6 +20,7 @@ Future<void> main() async {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<MyLocation>(create: (_) => MyLocation()),
+      ChangeNotifierProvider<MyCategory>(create: (_) => MyCategory()),
     ],
     child: MyApp(),
   ));
@@ -45,7 +47,6 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _currentBottomIndex = 0;
-  String? _selectedLocation = '양호동';
   bool _showAdditionalButtons = false;
 
   void _tapBottomTab(int index) {
@@ -117,7 +118,14 @@ class _MainPageState extends State<MainPage> {
           ),
           IconButton(
             icon: const Icon(Icons.notifications, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (BuildContext context) {
+                  return AlertSub();
+                }),
+              );
+            },
           ),
         ],
       ),

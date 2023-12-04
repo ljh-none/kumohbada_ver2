@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kumohbada_ver2/backend.dart';
+import 'package:provider/provider.dart';
 
 class Category extends StatelessWidget {
   Category({super.key});
@@ -39,7 +41,10 @@ class Category extends StatelessWidget {
                 ? Image.asset(imagePath, height: 24, width: 24)
                 : const Icon(Icons.error),
             title: Text(category),
-            onTap: () => Navigator.pop(context, category),
+            onTap: () {
+              context.read<MyCategory>().changeCategory(category: category);
+              Navigator.pop(context, category);
+            },
           );
         },
       ),

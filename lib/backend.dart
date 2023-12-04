@@ -30,7 +30,7 @@ const String SENDER_UID = "sender_uid";
 const String RECEIVER_UID = "receiver_uid";
 
 class MyLocation extends ChangeNotifier {
-  String _location = "양호동";
+  String _location = MyUser.instance.getLocation!;
   String get getLocation => _location;
 
   void changeLocation({required String location}) {
@@ -39,8 +39,19 @@ class MyLocation extends ChangeNotifier {
   }
 }
 
+class MyCategory extends ChangeNotifier {
+  String _category = "전체";
+  String get getCategory => _category;
+
+  void changeCategory({required String category}) {
+    _category = category;
+    notifyListeners();
+  }
+}
+
 //지역 리스트
 const List<String> availableLocations = [
+  '전체',
   '양호동',
   '선주 원남동',
   '도량동',
@@ -164,6 +175,8 @@ class MyAuth {
 }
 
 class MyUser {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String _uri = "/UserData";
   //singleton
   MyUser._privateConstructor();
   static final MyUser _instance = MyUser._privateConstructor();
@@ -186,8 +199,14 @@ class MyUser {
     _location = location;
   }
 
-  updateLocation({required String location}) {
+  updateLocation({required String location}) async {
     _location = location;
+    QuerySnapshot snapshot =
+        await _firestore.collection(_uri).where(UID, isEqualTo: _uid).get();
+    if (snapshot.docs.isEmpty) return;
+
+    var docId = snapshot.docs.first.id;
+    await _firestore.collection(_uri).doc(docId).update({LOCATION: _location});
   }
 
   updateNickname() {}
@@ -340,6 +359,9 @@ class Chat {
   final String _log = "chat_log";
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   MyUser myUser = MyUser._instance;
+  late CollectionReference _collectionReference;
+  //채팅할 때는 한 번에 하나의 채팅방으로만 함으로 임시로 채팅방 위치를 지정해줄 변수를 생성하였음.
+
   //파일구조
   //chatdata 컬렉션
   //내에 여러 문서들: 채팅방.
@@ -400,17 +422,29 @@ class Chat {
   }
 
   //채팅창 리스트에서 요소 클릭 시 채팅방으로 넘어갈 때
-  getChattingRoom(
-      {required Map<String, dynamic> item, required String senderUid}) async {
+  Stream<QuerySnapshot<Object?>> getChatStream(
+      {required Map<String, dynamic> item, required String senderUid}) async* {
     var result = await _firestore
         .collection(_baseUrl)
         .where(ITEMID, isEqualTo: item[ITEMID])
         .where(SENDER_UID, isEqualTo: senderUid)
         .get();
 
-    DocumentReference docRef = result.docs[0].reference;
-    CollectionReference collection = docRef.collection(_log);
-    return collection;
+    DocumentReference docRef = result.docs.first.reference;
+    _collectionReference = docRef.collection(_log);
+
+    yield* _collectionReference
+        .orderBy(TIMESTAMP, descending: true)
+        .snapshots();
+  }
+
+  //채팅 메시지 보내기
+  Future<void> sendMessage({required String msg}) async {
+    await _collectionReference.add({
+      CONTENT: msg,
+      SENDER: myUser.getNickname,
+      TIMESTAMP: FieldValue.serverTimestamp(),
+    });
   }
 
   //채팅방이 이미 존재할 경우

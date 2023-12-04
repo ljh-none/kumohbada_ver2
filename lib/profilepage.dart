@@ -116,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          context.watch<MyLocation>().getLocation,
+                          _myUser.getLocation!,
                           style: const TextStyle(fontSize: 18),
                         ),
                       ),
@@ -155,12 +155,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   width: 110,
                   height: 30,
                   child: DropdownButton<String>(
-                    value: _myUser.getLocation,
+                    value: context.watch<MyLocation>().getLocation,
                     onChanged: (String? newValue) {
                       if (newValue == null) return;
                       context
                           .read<MyLocation>()
                           .changeLocation(location: newValue);
+                      _myUser.updateLocation(location: newValue);
                     },
                     items: availableLocations
                         .map<DropdownMenuItem<String>>((String value) {

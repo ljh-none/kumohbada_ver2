@@ -72,7 +72,6 @@ class _ChatSubPageState extends State<ChatSubPage> {
   TextEditingController txtcontrollor = TextEditingController();
   final MyUser _myUser = MyUser.instance;
   final Chat _chat = Chat();
-  var chatRoom;
 
   Widget buildChatContent(context, AsyncSnapshot<QuerySnapshot> snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -99,40 +98,17 @@ class _ChatSubPageState extends State<ChatSubPage> {
     );
   }
 
-  _initChatRoom() async {
-    var result = await _chat.getChattingRoom(
-        item: widget._item!, senderUid: widget._senderUid!);
-    setState(() {
-      chatRoom = result;
-    });
-  }
-
-  @override
-  initState() {
-    super.initState();
-    Future.delayed(Duration.zero, () {
-      _initChatRoom();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     //navigator push로 정보를 가져온다. 어떤 방식이든 상관없다.
     //아이템 정보 전체이든, 등록자 uid이든 상대방 유저의 uid만 있으면 됨.
     //상대방 uid를 otherUid 파라미터에 넣으면 채팅방 생성 및 로드 가능.
 
-    Future<void> sendMessage() async {
-      await chatRoom.add({
-        CONTENT: txtcontrollor.text,
-        SENDER: _myUser.getNickname,
-        TIMESTAMP: FieldValue.serverTimestamp(),
-      });
-    }
-
     return Scaffold(
       appBar: AppBar(title: const Text("chat")),
       body: StreamBuilder(
-        stream: chatRoom.orderBy(TIMESTAMP, descending: true).snapshots(),
+        stream: _chat.getChatStream(
+            item: widget._item!, senderUid: widget._senderUid!),
         builder: buildChatContent,
       ),
       bottomNavigationBar: Row(children: [
@@ -145,7 +121,11 @@ class _ChatSubPageState extends State<ChatSubPage> {
             ),
           ),
         ),
-        ElevatedButton(onPressed: sendMessage, child: const Text("send"))
+        ElevatedButton(
+            onPressed: () async {
+              await _chat.sendMessage(msg: txtcontrollor.text);
+            },
+            child: const Text("send"))
       ]),
     );
   }
