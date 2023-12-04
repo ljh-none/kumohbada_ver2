@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
@@ -29,6 +29,16 @@ const String RECEIVER = "receiver";
 const String SENDER_UID = "sender_uid";
 const String RECEIVER_UID = "receiver_uid";
 
+class MyLocation extends ChangeNotifier {
+  String _location = "양호동";
+  String get getLocation => _location;
+
+  void changeLocation({required String location}) {
+    _location = location;
+    notifyListeners();
+  }
+}
+
 //지역 리스트
 const List<String> availableLocations = [
   '양호동',
@@ -41,7 +51,6 @@ const List<String> availableLocations = [
   '진미동',
   '인동동',
   '임오동',
-  '도량동',
   '지산동',
   '송정동',
   '형곡동',
@@ -176,6 +185,12 @@ class MyUser {
     _nickname = nickname;
     _location = location;
   }
+
+  updateLocation({required String location}) {
+    _location = location;
+  }
+
+  updateNickname() {}
 }
 
 class Item {

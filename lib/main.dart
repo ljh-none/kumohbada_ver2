@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:kumohbada_ver2/firebase_options.dart';
+import 'package:provider/provider.dart';
 
 import 'login.dart';
 import 'backend.dart';
@@ -14,10 +15,13 @@ import 'search.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyApp());
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider<MyLocation>(create: (_) => MyLocation()),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -76,14 +80,14 @@ class _MainPageState extends State<MainPage> {
         foregroundColor: Colors.black,
         title: PopupMenuButton(
           itemBuilder: buildPopupMenu,
-          initialValue: _selectedLocation,
+          initialValue: context.watch<MyLocation>().getLocation,
           onSelected: (value) {
-            setState(() => _selectedLocation = value);
+            context.read<MyLocation>().changeLocation(location: value);
           },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_selectedLocation!),
+              Text(context.watch<MyLocation>().getLocation),
               const Icon(Icons.keyboard_arrow_down),
             ],
           ),

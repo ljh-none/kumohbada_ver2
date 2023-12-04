@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'backend.dart';
 
@@ -92,29 +93,45 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
+              Row(children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  child: const CircleAvatar(backgroundColor: Colors.grey),
                   // TODO: 프로필 이미지 표시 (이미지 경로 또는 네트워크 이미지 사용)
-                  const CircleAvatar(
-                    radius: 30, // 이미지 크기 조절
-                    backgroundColor: Colors.grey, // 이미지가 없을 때의 배경색
-                    // backgroundImage: AssetImage('이미지_경로'),
-                    // backgroundImage: NetworkImage('네트워크_이미지_URL'),
+                  // backgroundImage: AssetImage('이미지_경로'),
+                  // backgroundImage: NetworkImage('네트워크_이미지_URL'),
+                ),
+                const SizedBox(width: 16),
+                // 현재 닉네임 표시
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _myUser.getNickname!,
+                        style: const TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          context.watch<MyLocation>().getLocation,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  // 현재 닉네임 표시
-                  Text(
-                    _myUser.getNickname!,
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
+                ),
+              ]),
               const SizedBox(height: 16),
               // 새로운 닉네임 입력 필드
-              TextField(
-                controller: _nicknameController,
-                decoration: const InputDecoration(labelText: '새로운 닉네임'),
+              SizedBox(
+                width: double.infinity, // 전체 폭으로 확장
+                child: TextField(
+                  controller: _nicknameController,
+                  decoration: const InputDecoration(labelText: '새로운 닉네임'),
+                ),
               ),
               const SizedBox(height: 16),
               // 닉네임 변경 버튼
@@ -127,30 +144,67 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: const Text('닉네임 변경'),
               ),
               const SizedBox(height: 32),
+              Row(children: [
+                const Spacer(),
+                const Text(
+                  '내 위치',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                SizedBox(
+                  width: 110,
+                  height: 30,
+                  child: DropdownButton<String>(
+                    value: _myUser.getLocation,
+                    onChanged: (String? newValue) {
+                      if (newValue == null) return;
+                      context
+                          .read<MyLocation>()
+                          .changeLocation(location: newValue);
+                    },
+                    items: availableLocations
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const Spacer(),
+              ]),
+
+              const SizedBox(height: 16),
               // 새로운 비밀번호 입력 필드
-              TextField(
-                controller: _newPasswordController,
-                onChanged: (_) {
-                  setState(() {
-                    _isPasswordMatch = _newPasswordController.text ==
-                        _confirmPasswordController.text;
-                  });
-                },
-                decoration: const InputDecoration(labelText: '새로운 비밀번호'),
-                obscureText: true,
+              SizedBox(
+                width: double.infinity, // 전체 폭으로 확장
+                child: TextField(
+                  controller: _newPasswordController,
+                  onChanged: (_) {
+                    setState(() {
+                      _isPasswordMatch = _newPasswordController.text ==
+                          _confirmPasswordController.text;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: '새로운 비밀번호'),
+                  obscureText: true,
+                ),
               ),
               const SizedBox(height: 16),
               // 비밀번호 확인 입력 필드
-              TextField(
-                controller: _confirmPasswordController,
-                onChanged: (_) {
-                  setState(() {
-                    _isPasswordMatch = _newPasswordController.text ==
-                        _confirmPasswordController.text;
-                  });
-                },
-                decoration: const InputDecoration(labelText: '비밀번호 확인'),
-                obscureText: true,
+              SizedBox(
+                width: double.infinity, // 전체 폭으로 확장
+                child: TextField(
+                  controller: _confirmPasswordController,
+                  onChanged: (_) {
+                    setState(() {
+                      _isPasswordMatch = _newPasswordController.text ==
+                          _confirmPasswordController.text;
+                    });
+                  },
+                  decoration: const InputDecoration(labelText: '비밀번호 확인'),
+                  obscureText: true,
+                ),
               ),
               const SizedBox(height: 16),
               // 비밀번호 변경 버튼
