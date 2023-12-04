@@ -94,7 +94,6 @@ class _ChatSubPageState extends State<ChatSubPage> {
       itemBuilder: (context, index) {
         var doc = snapshot.data!.docs[index];
         var data = doc.data() as Map<String, dynamic>;
-        print("${data[SENDER_UID]}___${_myUser.getUid}");
         if (data[SENDER] == _myUser.getNickname) {
           return Row(children: [
             const Spacer(),

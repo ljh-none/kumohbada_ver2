@@ -34,8 +34,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _updateNickname() {
     _showPopup('닉네임이 변경되었습니다.', true);
-    _nicknameController.clear();
-    setState(() {});
+    _myUser.updateNickname(nickname: _nicknameController.text);
+    setState(() {
+      _nicknameController.clear();
+    });
   }
 
   void _updatePassword() {
@@ -95,13 +97,12 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Row(children: [
                 Container(
-                  width: 60,
-                  height: 60,
-                  child: const CircleAvatar(backgroundColor: Colors.grey),
-                  // TODO: 프로필 이미지 표시 (이미지 경로 또는 네트워크 이미지 사용)
-                  // backgroundImage: AssetImage('이미지_경로'),
-                  // backgroundImage: NetworkImage('네트워크_이미지_URL'),
-                ),
+                    width: 60,
+                    height: 60,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.grey,
+                      backgroundImage: NetworkImage(_myUser.getProfileImage!),
+                    )),
                 const SizedBox(width: 16),
                 // 현재 닉네임 표시
                 Expanded(
@@ -138,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ElevatedButton(
                 onPressed: () async {
                   await _isNicknameChanged()
-                      ? _updateNickname
+                      ? _updateNickname()
                       : _showPopup("이미 존재하는 닉네임입니다", false);
                 },
                 child: const Text('닉네임 변경'),

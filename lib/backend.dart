@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 const String UID = "uid";
 const String NICKNAME = "nickname";
 const String LOCATION = "location";
+const String PROFILE_URI = "profileUri";
 
 // 아이템 클래스에서 쓰이는 상수
 const String IMAGE_URI = 'imageUri';
@@ -70,6 +71,50 @@ const List<String> availableLocations = [
   '비산동',
   '공단동',
 ];
+
+final List<String> categoryList = [
+  '전체',
+  '디지털기기',
+  '가구/인테리어',
+  '유아동',
+  '여성의류',
+  '여성잡화',
+  '남성패션/잡화',
+  '생활가전',
+  '생활/주방',
+  '가공식품',
+  '스포츠/레저',
+  '취미/게임/음반',
+  '뷰티/미용',
+  '식물',
+  '반려동물용품',
+  '티켓/교환권',
+  '도서',
+  '유아도서',
+  '기타 중고물품',
+];
+
+final Map<String, String> categoryImages = {
+  '전체': 'assets/images/all.png', // 0
+  '디지털기기': 'assets/images/digital_device.png', // 1
+  '가구/인테리어': 'assets/images/furniture_interior.png', // 2
+  '유아동': 'assets/images/baby_product.png', // 3
+  '여성의류': 'assets/images/female_clothes.png', // 4
+  '여성잡화': 'assets/images/female_goods.png', // 5
+  '남성패션/잡화': 'assets/images/male_clothes_goods.png', // 6
+  '생활가전': 'assets/images/electric_appliance.png', // 7
+  '생활/주방': 'assets/images/kitchenware.png', // 8
+  '가공식품': 'assets/images/canned_food.png', // 9
+  '스포츠/레저': 'assets/images/sports_leisure.png', // 10
+  '취미/게임/음반': 'assets/images/hobby_game_music.png', // 11
+  '뷰티/미용': 'assets/images/beauty.png', // 12
+  '식물': 'assets/images/plant.png', // 13
+  '반려동물용품': 'assets/images/pet_supplies.png', // 14
+  '티켓/교환권': 'assets/images/ticket.png', // 15
+  '도서': 'assets/images/book.png', // 16
+  '유아도서': 'assets/images/baby_book.png', // 17
+  '기타 중고물품': 'assets/images/others.png', // 18
+};
 
 class MyAuth {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -139,7 +184,13 @@ class MyAuth {
 
   _registUser(String uid, String nickname, String location) {
     var collection = _firestore.collection(_uri);
-    collection.add({UID: uid, NICKNAME: nickname, LOCATION: location});
+    collection.add({
+      UID: uid,
+      NICKNAME: nickname,
+      LOCATION: location,
+      PROFILE_URI:
+          "https://firebasestorage.googleapis.com/v0/b/ljh-firebase-for-flutter.appspot.com/o/Profile%2Fuser.png?alt=media&token=1a822917-dcbd-4abf-887c-6dc044c85db0",
+    });
   }
 
   //sign in
@@ -155,7 +206,11 @@ class MyAuth {
       return;
     }
     _myUser.setUser(
-        uid: data[UID], nickname: data[NICKNAME], location: data[LOCATION]);
+      uid: data[UID],
+      nickname: data[NICKNAME],
+      location: data[LOCATION],
+      profileImage: data[PROFILE_URI],
+    );
     return true;
   }
 
@@ -177,6 +232,7 @@ class MyAuth {
 class MyUser {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _uri = "/UserData";
+  final String _profileUri = "/Profile";
   //singleton
   MyUser._privateConstructor();
   static final MyUser _instance = MyUser._privateConstructor();
@@ -185,18 +241,22 @@ class MyUser {
   String? _uid;
   String? _nickname;
   String? _location;
+  String? _profileImage;
 
   String? get getUid => _uid;
   String? get getNickname => _nickname;
   String? get getLocation => _location;
+  String? get getProfileImage => _profileImage;
 
   setUser(
       {required String uid,
       required String nickname,
-      required String location}) {
+      required String location,
+      required String profileImage}) {
     _uid = uid;
     _nickname = nickname;
     _location = location;
+    _profileImage = profileImage;
   }
 
   updateLocation({required String location}) async {
@@ -209,7 +269,22 @@ class MyUser {
     await _firestore.collection(_uri).doc(docId).update({LOCATION: _location});
   }
 
-  updateNickname() {}
+  updateNickname({required String nickname}) async {
+    _nickname = nickname;
+    QuerySnapshot snapshot =
+        await _firestore.collection(_uri).where(UID, isEqualTo: _uid).get();
+    if (snapshot.docs.isEmpty) return;
+
+    var docId = snapshot.docs.first.id;
+    await _firestore.collection(_uri).doc(docId).update({NICKNAME: _nickname});
+  }
+
+  getOthersProfileImage({required String otherUid}) async {
+    var result =
+        await _firestore.collection(_uri).where(UID, isEqualTo: otherUid).get();
+    if (result.docs.isEmpty) return;
+    return result.docs.first[PROFILE_URI];
+  }
 }
 
 class Item {
@@ -351,6 +426,16 @@ class Item {
       list.add(doc.data());
     }
     return list;
+  }
+
+  Future getCategoryItem({required String category}) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection(_itemUri)
+        .where(CATEGORY, isEqualTo: category)
+        .orderBy(TIMESTAMP)
+        .get();
+
+    return snapshot.docs.first;
   }
 }
 

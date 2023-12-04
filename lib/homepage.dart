@@ -20,119 +20,121 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     Future loadMoreData(var time) async {
-      print("!load More Data");
       var result = await _item.getMoreItem(time: time);
       if (result.isEmpty) {
         return;
       }
       setState(() => list.addAll(result));
-      print("!add ${result[0]}");
     }
 
     return FutureBuilder(
-        future: _item.startItemStream(),
-        builder: (BuildContext context, snapshot) {
-          if (snapshot.hasData) {
-            list.addAll(snapshot.data!);
-            return Container(
-              color: Colors.white,
-              child: ListView.separated(
-                itemCount: list.length,
-                itemBuilder: (BuildContext context, int index) {
-                  if (index == list.length - 1) {
-                    //스크롤 무한로딩
-                    loadMoreData(list[index][TIMESTAMP]);
-                  }
-                  DateTime date = list[index][TIMESTAMP].toDate();
-                  String formattedTime = timeago.format(date, locale: 'ko');
-                  if (context.watch<MyCategory>().getCategory != "전체" &&
-                      context.watch<MyLocation>().getLocation !=
-                          list[index][LOCATION]) {
-                    return Container();
-                  }
-                  if (context.watch<MyCategory>().getCategory != "전체" &&
-                      context.watch<MyCategory>().getCategory !=
-                          list[index][CATEGORY]) {
-                    return Container();
-                  }
+      future: _item.startItemStream(),
+      builder: (BuildContext context, snapshot) {
+        if (snapshot.data == null || !snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-                  return Card(
-                    elevation: 0,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (BuildContext context) {
+        list.addAll(snapshot.data!);
+        return Container(
+          color: Colors.white,
+          child: ListView.separated(
+            itemCount: list.length,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == list.length - 1) {
+                loadMoreData(list[index][TIMESTAMP]);
+              } //스크롤 무한로딩 로직
+
+              if (context.watch<MyLocation>().getLocation != "전체" &&
+                  list[index][LOCATION] !=
+                      context.watch<MyLocation>().getLocation) {
+                return Container();
+              } else {
+                DateTime date = list[index][TIMESTAMP].toDate();
+                String formattedTime = timeago.format(date, locale: 'ko');
+
+                return Card(
+                  elevation: 0,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) {
                             return HomeSubPage(item: list[index]);
-                          }),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Row(
-                          children: <Widget>[
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10.0),
-                              child: Image.network(
-                                list[index][IMAGE_URI] ?? '대체이미지_URL',
-                                width: 100.0,
-                                height: 100.0,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            const SizedBox(width: 30),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    list[index][TITLE],
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(list[index][LOCATION]),
-                                      const SizedBox(width: 5),
-                                      const Text('•'),
-                                      const SizedBox(width: 5),
-                                      Text(formattedTime),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    '${NumberFormat('#,###', 'ko_KR').format(list[index][PRICE])}원',
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                          },
                         ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Row(
+                        children: <Widget>[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Image.network(
+                              list[index][IMAGE_URI] ?? '대체이미지_URL',
+                              width: 100.0,
+                              height: 100.0,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  list[index][TITLE],
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(list[index][LOCATION]),
+                                    const SizedBox(width: 5),
+                                    const Text('•'),
+                                    const SizedBox(width: 5),
+                                    Text(formattedTime),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  '${NumberFormat('#,###', 'ko_KR').format(list[index][PRICE])}원',
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  // 각 아이템 사이에 Divider 추가
-                  return Divider(
-                    height: 1,
-                    color: Color.fromARGB(136, 73, 73, 73)!.withOpacity(1),
-                    indent: 16, // 시작 부분의 공백
-                    endIndent: 16, // 끝 부분의 공백
-                  );
-                },
-              ),
-            );
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        });
+                  ),
+                );
+              }
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              if (context.watch<MyLocation>().getLocation != "전체" &&
+                  list[index][LOCATION] !=
+                      context.watch<MyLocation>().getLocation) {
+                return Container();
+              } else {
+                return Divider(
+                  height: 1,
+                  color: const Color.fromARGB(136, 73, 73, 73).withOpacity(1),
+                  indent: 16, // 시작 부분의 공백
+                  endIndent: 16, // 끝 부분의 공백
+                );
+              }
+            },
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -146,109 +148,121 @@ class HomeSubPage extends StatefulWidget {
 
 class _HomeSubPageState extends State<HomeSubPage> {
   final MyUser _myUser = MyUser.instance;
-  Chat _chat = Chat();
+  late String profileUri;
+  final Chat _chat = Chat();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text(widget.item[TITLE]),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-      ),
-      body: Container(
-        color: Colors.white,
-        child: ListView.separated(
-          itemCount: 3,
-          itemBuilder: (context, index) {
-            if (index == 0) {
-              return Image.network(widget.item[IMAGE_URI]);
-            } else if (index == 1) {
-              return Card(
-                elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.white,
-                      backgroundImage: NetworkImage(widget.item[IMAGE_URI]),
-                    ),
-                    SizedBox(width: 8.0),
-                    Column(children: [
-                      Text(widget.item[REGISTER],
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text(widget.item[LOCATION]),
-                    ]),
-                    const Spacer(),
-                    Column(children: [
-                      Row(
-                        children: List.generate(
-                            5, // 별점을 표시하는 부분은 어떻게 처리할지 알려주셔야 합니다.
-                            (index) => Icon(Icons.star, color: Colors.orange)),
+    loadProfileImage() async {
+      profileUri =
+          await _myUser.getOthersProfileImage(otherUid: widget.item[UID]);
+    }
+
+    return FutureBuilder(
+        future: loadProfileImage(),
+        builder: (BuildContext context, snapshot) {
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              title: Text(widget.item[TITLE]),
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              elevation: 0,
+            ),
+            body: Container(
+              color: Colors.white,
+              child: ListView.separated(
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Image.network(widget.item[IMAGE_URI]);
+                  } else if (index == 1) {
+                    return Card(
+                      elevation: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(children: [
+                          CircleAvatar(
+                            backgroundColor: Colors.white,
+                            backgroundImage: NetworkImage(profileUri),
+                          ),
+                          const SizedBox(width: 8.0),
+                          Column(children: [
+                            Text(widget.item[REGISTER],
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text(widget.item[LOCATION]),
+                          ]),
+                          const Spacer(),
+                          Column(children: [
+                            Row(
+                              children: List.generate(
+                                  5, // 별점을 표시하는 부분은 어떻게 처리할지 알려주셔야 합니다.
+                                  (index) => const Icon(Icons.star,
+                                      color: Colors.orange)),
+                            ),
+                            Text(timeago.format(
+                              widget.item[TIMESTAMP].toDate(),
+                              locale: 'ko',
+                            )),
+                          ]),
+                        ]),
                       ),
-                      Text(timeago.format(
-                        widget.item[TIMESTAMP].toDate(),
-                        locale: 'ko',
-                      )),
-                    ]),
-                  ]),
-                ),
-              );
-            } else {
-              return Card(
-                elevation: 0,
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Text(widget.item[DESCRIPTION]),
-                ),
-              );
-            }
-          },
-          separatorBuilder: (context, index) {
-            return const Divider(
-              color: Color.fromARGB(255, 211, 211, 211),
-              thickness: 1,
-              indent: 20,
-              endIndent: 20,
-            );
-          },
-        ),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Row(
-            children: [
-              Text(
-                  '가격 : ${NumberFormat('#,###', 'ko_KR').format(widget.item[PRICE])}원'),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_myUser.getUid == widget.item[UID]) {
-                    return;
+                    );
+                  } else {
+                    return Card(
+                      elevation: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Text(widget.item[DESCRIPTION]),
+                      ),
+                    );
                   }
-                  var result = await _chat.checkRoomExist(item: widget.item);
-                  if (!result) {
-                    //챗방이 없을 때
-                    await _chat.createChattingRoom(item: widget.item);
-                  }
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (BuildContext context) {
-                      return ChatSubPage(widget.item, _myUser.getUid);
-                    }),
+                },
+                separatorBuilder: (context, index) {
+                  return const Divider(
+                    color: Color.fromARGB(255, 211, 211, 211),
+                    thickness: 1,
+                    indent: 20,
+                    endIndent: 20,
                   );
                 },
-                child: const Text("채팅하기"),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+              ),
+            ),
+            bottomNavigationBar: BottomAppBar(
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  children: [
+                    Text(
+                        '가격 : ${NumberFormat('#,###', 'ko_KR').format(widget.item[PRICE])}원'),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_myUser.getUid == widget.item[UID]) {
+                          return;
+                        }
+                        var result =
+                            await _chat.checkRoomExist(item: widget.item);
+                        if (!result) {
+                          //챗방이 없을 때
+                          await _chat.createChattingRoom(item: widget.item);
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (BuildContext context) {
+                            return ChatSubPage(widget.item, _myUser.getUid);
+                          }),
+                        );
+                      },
+                      child: const Text("채팅하기"),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
   }
 }

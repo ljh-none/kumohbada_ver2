@@ -45,25 +45,7 @@ class _RegistItemPageState extends State<RegistItemPage> {
   _returnToHomePage() => Navigator.pop(context, true);
 
   // 카테고리를 선택하는 함수
-  Future<void> _selectCategory() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Category()),
-    );
-
-    if (result != null) {
-      setState(() {
-        if (result is String) {
-          // Handle the case where result is a String
-          _selectedCategory = result;
-        } else if (result is Map<String, dynamic> &&
-            result.containsKey('category')) {
-          // Handle the case where result is a Map and contains 'category' key
-          _selectedCategory = result['category'];
-        }
-      });
-    }
-  }
+  void _selectCategory() {}
 
   @override
   Widget build(BuildContext context) {
@@ -102,8 +84,8 @@ class _RegistItemPageState extends State<RegistItemPage> {
                     height: 100.0,
                     width: 130.0,
                     child: Center(
-                      child: Image.file(
-                        File(_image!.path),
+                      child: Image.network(
+                        _image!.path,
                         fit: BoxFit.scaleDown,
                       ),
                     ),
@@ -149,12 +131,24 @@ class _RegistItemPageState extends State<RegistItemPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 5.0),
                 child: Row(
                   children: [
-                    ElevatedButton(
-                      onPressed: _selectCategory,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18.0), // 버튼 내부의 내용과의 간격 조절
-                      ),
+                    PopupMenuButton(
+                      onSelected: (value) {
+                        setState(() {
+                          _selectedCategory = value.toString();
+                        });
+                      },
+                      itemBuilder: (BuildContext context) {
+                        List<PopupMenuEntry<String>> list = [];
+                        for (String str in categoryImages.keys) {
+                          list.add(
+                            PopupMenuItem<String>(
+                              value: str,
+                              child: Text(str),
+                            ),
+                          );
+                        }
+                        return list;
+                      },
                       child: const Text('카테고리 선택'),
                     ),
                     const SizedBox(width: 16),
