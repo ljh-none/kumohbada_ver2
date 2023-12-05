@@ -227,6 +227,13 @@ class MyAuth {
     }
     await _verifyUser(email, password, nickname);
   }
+
+  changePassword(String newPassword) async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await user.updatePassword(newPassword);
+  }
 }
 
 class MyUser {
