@@ -30,6 +30,7 @@ const String RECEIVER = "receiver";
 const String SENDER_UID = "sender_uid";
 const String RECEIVER_UID = "receiver_uid";
 
+//provider class
 class MyLocation extends ChangeNotifier {
   String _location = MyUser.instance.getLocation!;
   String get getLocation => _location;
@@ -50,7 +51,7 @@ class MyCategory extends ChangeNotifier {
   }
 }
 
-//지역 리스트
+//리스트 변수 - 지역, 카테고리, 카테고리에 따른 이미지
 const List<String> availableLocations = [
   '전체',
   '양호동',
@@ -116,12 +117,16 @@ final Map<String, String> categoryImages = {
   '기타 중고물품': 'assets/images/others.png', // 18
 };
 
+//데이터베이스 관련 클래스들
 class MyAuth {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final MyUser _myUser = MyUser.instance;
+
+  //member variable
   final String _uri = "/UserData";
 
+  //private function
   Future _getDocs(String key, String value) async {
     //key: doc's index, value: document
     var result =
@@ -131,55 +136,21 @@ class MyAuth {
   }
 
   Future _authenticateUser(String email, String password) async {
-    try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      User? user = result.user;
-      return user;
-    } on FirebaseAuthException {
-      return;
-    }
+    UserCredential userInfo = await _auth.signInWithEmailAndPassword(
+        email: email, password: password);
+    if (userInfo.user == null) return;
+
+    return userInfo.user!;
   }
 
   _loadUserData(String uid) async {
     var docs = await _getDocs(UID, uid);
-    if (docs == null || docs.isEmpty || docs[0] == null) {
-      print("!docs null or empty");
-      return;
-    }
+    if (docs == null || docs.isEmpty) return false;
+
     Map data = docs[0].data() as Map;
-    if (data[UID] == null || data[NICKNAME] == null || data[LOCATION] == null) {
-      print("!null from user database");
-      return;
-    }
-    if (data.isEmpty) {
-      print("!user not exist");
-      return;
-    }
+    if (data.isEmpty) return;
+
     return data;
-  }
-
-  isNicknameTaken(String nickname) async {
-    var data = await _getDocs(NICKNAME, nickname);
-    if (data == null || data.isEmpty) {
-      return false;
-    }
-    return true;
-  }
-
-  Future _verifyUser(String email, String password, String nickname) async {
-    try {
-      UserCredential userInfo = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      if (userInfo.user!.email == null) {
-        print("!null from email");
-        return;
-      }
-      _auth.currentUser!.sendEmailVerification();
-      _registUser(userInfo.user!.uid, nickname, "양호동");
-    } on FirebaseAuthException catch (e) {
-      print(e.code.toString());
-    }
   }
 
   _registUser(String uid, String nickname, String location) {
@@ -193,39 +164,13 @@ class MyAuth {
     });
   }
 
-  //sign in
-  signIn({required String email, required String password}) async {
-    User? user = await _authenticateUser(email, password);
-    if (user == null) {
-      print("!failed verifying user");
-      return;
-    }
-    Map<String, dynamic>? data = await _loadUserData(user.uid);
-    if (data == null) {
-      print("!failed load data");
-      return;
-    }
-    _myUser.setUser(
-      uid: data[UID],
-      nickname: data[NICKNAME],
-      location: data[LOCATION],
-      profileImage: data[PROFILE_URI],
-    );
+  //public function
+  isNicknameTaken(String nickname) async {
+    //닉네임 중복 검사
+    var data = await _getDocs(NICKNAME, nickname);
+
+    if (data == null || data.isEmpty) return false;
     return true;
-  }
-
-  //sign out
-  Future signOut() async => await FirebaseAuth.instance.signOut();
-
-  //sign up
-  signUp(
-      {required String email,
-      required String password,
-      required String nickname}) async {
-    if (await isNicknameTaken(nickname)) {
-      return;
-    }
-    await _verifyUser(email, password, nickname);
   }
 
   changePassword(String newPassword) async {
@@ -234,12 +179,49 @@ class MyAuth {
 
     await user.updatePassword(newPassword);
   }
+
+  //sign function
+  signIn({required String email, required String password}) async {
+    User? user = await _authenticateUser(email, password);
+    if (user == null) return false;
+
+    Map<String, dynamic>? data = await _loadUserData(user.uid);
+    if (data == null) return false;
+
+    _myUser.setUser(
+      uid: data[UID],
+      nickname: data[NICKNAME],
+      location: data[LOCATION],
+      profileImage: data[PROFILE_URI],
+    );
+
+    return true;
+  }
+
+  Future signOut() async => await FirebaseAuth.instance.signOut();
+
+  signUp({
+    required String email,
+    required String password,
+    required String nickname,
+  }) async {
+    if (await isNicknameTaken(nickname)) return false;
+
+    UserCredential userInfo = await _auth.createUserWithEmailAndPassword(
+        email: email, password: password);
+    if (userInfo.user == null || _auth.currentUser == null) return false;
+
+    _auth.currentUser!.sendEmailVerification();
+    _registUser(userInfo.user!.uid, nickname, "양호동");
+    return true;
+  }
 }
 
 class MyUser {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final String _uri = "/UserData";
-  final String _profileUri = "/Profile";
+  final String _profileUri = "Profile/";
   //singleton
   MyUser._privateConstructor();
   static final MyUser _instance = MyUser._privateConstructor();
@@ -266,31 +248,66 @@ class MyUser {
     _profileImage = profileImage;
   }
 
-  updateLocation({required String location}) async {
-    _location = location;
+  _getUserDocument() async {
     QuerySnapshot snapshot =
         await _firestore.collection(_uri).where(UID, isEqualTo: _uid).get();
-    if (snapshot.docs.isEmpty) return;
+    return snapshot;
+  }
 
+  String _getUuid() {
+    Uuid uuid = const Uuid();
+    return uuid.v4();
+  }
+
+  Future _registImage(XFile image) async {
+    String str = _getUuid(); //무작위로 이름 생성
+    Reference ref = _storage.ref().child('$_profileUri$str');
+    Uint8List imageData = await image.readAsBytes();
+    await ref.putData(imageData);
+    String imageurl = await ref.getDownloadURL();
+    return imageurl;
+  }
+
+  changeLocation({required String location}) async {
+    QuerySnapshot? snapshot = await _getUserDocument();
+    if (snapshot == null || snapshot.docs.isEmpty) return;
+
+    _location = location;
     var docId = snapshot.docs.first.id;
+
     await _firestore.collection(_uri).doc(docId).update({LOCATION: _location});
   }
 
-  updateNickname({required String nickname}) async {
-    _nickname = nickname;
-    QuerySnapshot snapshot =
-        await _firestore.collection(_uri).where(UID, isEqualTo: _uid).get();
-    if (snapshot.docs.isEmpty) return;
+  changeNickname({required String nickname}) async {
+    QuerySnapshot? snapshot = await _getUserDocument();
+    if (snapshot == null || snapshot.docs.isEmpty) return;
 
+    _nickname = nickname;
     var docId = snapshot.docs.first.id;
+
     await _firestore.collection(_uri).doc(docId).update({NICKNAME: _nickname});
   }
 
+  changeProfileImage({required XFile profileImage}) async {
+    QuerySnapshot? snapshot = await _getUserDocument();
+    if (snapshot == null || snapshot.docs.isEmpty) return;
+
+    String uri = await _registImage(profileImage);
+    _profileImage = uri;
+    var docId = snapshot.docs.first.id;
+
+    await _firestore
+        .collection(_uri)
+        .doc(docId)
+        .update({PROFILE_URI: _profileImage});
+  }
+
   getOthersProfileImage({required String otherUid}) async {
-    var result =
+    QuerySnapshot snapshot =
         await _firestore.collection(_uri).where(UID, isEqualTo: otherUid).get();
-    if (result.docs.isEmpty) return;
-    return result.docs.first[PROFILE_URI];
+    if (snapshot.docs.isEmpty) return;
+
+    return snapshot.docs.first[PROFILE_URI];
   }
 }
 

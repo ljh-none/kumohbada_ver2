@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'backend.dart';
@@ -34,7 +35,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _updateNickname() {
     _showPopup('닉네임이 변경되었습니다.', true);
-    _myUser.updateNickname(nickname: _nicknameController.text);
+    _myUser.changeNickname(nickname: _nicknameController.text);
     setState(() {
       _nicknameController.clear();
     });
@@ -83,12 +84,21 @@ class _ProfilePageState extends State<ProfilePage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(children: [
-                Container(
+                SizedBox(
                     width: 60,
                     height: 60,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey,
-                      backgroundImage: NetworkImage(_myUser.getProfileImage!),
+                    child: GestureDetector(
+                      onTap: () async {
+                        XFile? image = await ImagePicker()
+                            .pickImage(source: ImageSource.gallery);
+                        if (image == null) return;
+                        await _myUser.changeProfileImage(profileImage: image);
+                        setState(() {});
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Colors.grey,
+                        backgroundImage: NetworkImage(_myUser.getProfileImage!),
+                      ),
                     )),
                 const SizedBox(width: 16),
                 // 현재 닉네임 표시
@@ -149,7 +159,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       context
                           .read<MyLocation>()
                           .changeLocation(location: newValue);
-                      _myUser.updateLocation(location: newValue);
+                      _myUser.changeLocation(location: newValue);
                     },
                     items: availableLocations
                         .map<DropdownMenuItem<String>>((String value) {
