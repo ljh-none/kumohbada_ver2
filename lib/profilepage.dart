@@ -154,12 +154,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   height: 30,
                   child: DropdownButton<String>(
                     value: context.watch<MyLocation>().getLocation,
-                    onChanged: (String? newValue) {
+                    onChanged: (String? newValue) async {
                       if (newValue == null) return;
                       context
                           .read<MyLocation>()
                           .changeLocation(location: newValue);
-                      _myUser.changeLocation(location: newValue);
+                      await _myUser.changeLocation(location: newValue);
+                      setState(() {});
                     },
                     items: availableLocations
                         .map<DropdownMenuItem<String>>((String value) {
