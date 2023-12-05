@@ -40,13 +40,6 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  void _updatePassword() {
-    _showPopup('비밀번호가 변경되었습니다.', true);
-    _newPasswordController.clear();
-    _confirmPasswordController.clear();
-    setState(() {});
-  }
-
   _isNicknameChanged() async {
     // return true; // 닉네임이 변경된 경우
     // return false; // 닉네임이 변경되지 않은 경우
@@ -56,12 +49,6 @@ class _ProfilePageState extends State<ProfilePage> {
       return false;
     }
     return true;
-  }
-
-  bool _isPasswordChanged() {
-    // return true; // 비밀번호가 변경된 경우
-    // return false; // 비밀번호가 변경되지 않은 경우
-    return _newPasswordController.text.isNotEmpty;
   }
 
   void _showPopup(String message, bool bl) {
@@ -211,9 +198,17 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 16),
               // 비밀번호 변경 버튼
               ElevatedButton(
-                onPressed: _isPasswordChanged() && _isPasswordMatch
-                    ? _updatePassword
-                    : null,
+                onPressed: () async {
+                  if (_newPasswordController.text !=
+                      _confirmPasswordController.text) {
+                    _showPopup("비밀번호를 정확히 입력하세요", false);
+                    return;
+                  }
+                  await _myAuth.changePassword(_newPasswordController.text);
+                  _newPasswordController.clear();
+                  _confirmPasswordController.clear();
+                  _showPopup("변경 성공!", true);
+                },
                 child: const Text('비밀번호 변경'),
               ),
             ],
