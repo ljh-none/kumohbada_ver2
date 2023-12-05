@@ -175,9 +175,13 @@ class MyAuth {
 
   changePassword(String newPassword) async {
     User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-
-    await user.updatePassword(newPassword);
+    if (user == null) return false;
+    try {
+      await user.updatePassword(newPassword);
+    } catch (e) {
+      return;
+    }
+    return true;
   }
 
   //sign function

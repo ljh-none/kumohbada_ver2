@@ -215,7 +215,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     _showPopup("비밀번호를 정확히 입력하세요", false);
                     return;
                   }
-                  await _myAuth.changePassword(_newPasswordController.text);
+                  var result =
+                      await _myAuth.changePassword(_newPasswordController.text);
+                  if (result == null) {
+                    _showPopup("비밀번호를 6자리 이상 입력해주세요", false);
+                    return;
+                  }
                   _newPasswordController.clear();
                   _confirmPasswordController.clear();
                   _showPopup("변경 성공!", true);
