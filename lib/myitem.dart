@@ -30,6 +30,7 @@ class _MyItemPageState extends State<MyItemPage> {
                 itemBuilder: (BuildContext context, int index) {
                   DateTime date = snapshot.data![index][TIMESTAMP].toDate();
                   String formattedTime = timeago.format(date, locale: 'ko');
+
                   return Card(
                     elevation: 0,
                     child: InkWell(
@@ -45,59 +46,64 @@ class _MyItemPageState extends State<MyItemPage> {
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(10.0),
-                        child: Row(
-                          children: <Widget>[
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10.0),
-                              child: Image.network(
-                                snapshot.data![index][IMAGE_URI] ?? '대체이미지_URL',
-                                width: 100.0,
-                                height: 100.0,
-                                fit: BoxFit.cover,
-                              ),
+                        child: Row(children: <Widget>[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10.0),
+                            child: Image.network(
+                              snapshot.data![index][IMAGE_URI] ?? '대체이미지_URL',
+                              width: 100.0,
+                              height: 100.0,
+                              fit: BoxFit.cover,
                             ),
-                            const SizedBox(width: 30),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    snapshot.data![index][TITLE],
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                          ),
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  snapshot.data![index][TITLE],
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(snapshot.data![index][LOCATION]),
-                                      const SizedBox(width: 5),
-                                      const Text('•'),
-                                      const SizedBox(width: 5),
-                                      Text(formattedTime),
-                                    ],
+                                ),
+                                const SizedBox(height: 5),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(snapshot.data![index][LOCATION]),
+                                    const SizedBox(width: 5),
+                                    const Text('•'),
+                                    const SizedBox(width: 5),
+                                    Text(formattedTime),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  '${NumberFormat('#,###', 'ko_KR').format(snapshot.data![index][PRICE])}원',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    '${NumberFormat('#,###', 'ko_KR').format(snapshot.data![index][PRICE])}원',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              await _item.deleteItem(
+                                  itemId: snapshot.data![index][ITEMID]);
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.delete),
+                          ),
+                        ]),
                       ),
                     ),
                   );
                 },
                 separatorBuilder: (BuildContext context, int index) {
-                  // 각 아이템 사이에 Divider 추가
                   return Divider(
                     height: 1,
                     color: Color.fromARGB(136, 73, 73, 73)!.withOpacity(1),

@@ -97,10 +97,10 @@ class _ChatSubPageState extends State<ChatSubPage> {
       return const Center(child: CircularProgressIndicator());
     }
     if (snapshot.hasError) {
-      return const Text("err!");
+      return const Center(child: Text("err!"));
     }
     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-      return const Text("no data");
+      return const Center(child: Text("no data"));
     }
 
     return ListView.builder(

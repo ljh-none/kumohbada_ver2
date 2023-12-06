@@ -397,6 +397,17 @@ class Item {
     return item;
   }
 
+  //아이템 삭제
+  deleteItem({required String itemId}) async {
+    QuerySnapshot? snapshot = await _firestore
+        .collection(_itemUri)
+        .where(ITEMID, isEqualTo: itemId)
+        .get();
+
+    DocumentReference docRef = snapshot.docs.first.reference;
+    await docRef.delete();
+  }
+
   //내 아이템만 출력
   Future<List<Map<String, dynamic>>> getMyItems() async {
     List<Map<String, dynamic>> list = [];
@@ -431,7 +442,6 @@ class Item {
   }
 
   Future getMoreItem({required Timestamp time}) async {
-    print("!start get");
     List<Map<String, dynamic>> list = [];
     var snapshot = await _firestore
         .collection(_itemUri)
@@ -449,10 +459,7 @@ class Item {
   }
 
   Future searchItem({required String? str}) async {
-    if (str == null) {
-      return;
-    }
-    print(str);
+    if (str == null) return;
     List<Map<String, dynamic>> list = [];
     var snapshot = await _firestore
         .collection(_itemUri)
