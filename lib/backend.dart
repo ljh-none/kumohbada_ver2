@@ -385,6 +385,18 @@ class Item {
     return image;
   }
 
+  //단일 아이템 로드
+  getSingleItem({required String itemId}) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection(_itemUri)
+        .where(ITEMID, isEqualTo: itemId)
+        .get();
+    if (snapshot.docs.isEmpty || snapshot.docs.first.data() == null) return;
+    Map<String, dynamic> item =
+        snapshot.docs.first.data() as Map<String, dynamic>;
+    return item;
+  }
+
   //내 아이템만 출력
   Future<List<Map<String, dynamic>>> getMyItems() async {
     List<Map<String, dynamic>> list = [];
@@ -467,18 +479,12 @@ class Item {
 }
 
 class Chat {
-  final String _baseUrl = '/ChatData';
+  final String _baseUrl = '/NewChatData';
   final String _log = "chat_log";
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   MyUser myUser = MyUser._instance;
   late CollectionReference _collectionReference;
-  //채팅할 때는 한 번에 하나의 채팅방으로만 함으로 임시로 채팅방 위치를 지정해줄 변수를 생성하였음.
-
-  //파일구조
-  //chatdata 컬렉션
-  //내에 여러 문서들: 채팅방.
-  //문서 내에는 발신자, 송신자 필드와 채팅 로그 저장을 위한 컬렉션이 있음.
-  //채팅 로그 컬렉션에는 여러 문서들이 있는데, 그 문서 하나하나가 메시지임.
+  //채팅할 때는 한 번에 하나의 채팅방으로만 함. 따라서 임시로 채팅방 위치를 지정해줄 변수를 생성하였음.
 
   _getSenderIsMe() async {
     List<Map<String, dynamic>> list = [];
@@ -518,7 +524,7 @@ class Chat {
     return list;
   }
 
-  //활성화 중인 채팅창 리스트 출력을 위해
+  //활성화 중인 채팅창 리스트 출력 함수
   Future showChatList() async {
     List<Map<String, dynamic>> list = [];
     list.addAll(await _getSenderIsMe());
@@ -548,6 +554,7 @@ class Chat {
     await _collectionReference.add({
       CONTENT: msg,
       SENDER: myUser.getNickname,
+      SENDER_UID: myUser.getUid,
       TIMESTAMP: FieldValue.serverTimestamp(),
     });
   }
@@ -556,7 +563,7 @@ class Chat {
   checkRoomExist({required Map<String, dynamic> item}) async {
     var docRef = await _firestore
         .collection(_baseUrl)
-        .doc("${myUser.getUid}_${item[UID]}_${item[ITEMID]}")
+        .doc("${myUser.getUid}_${item[ITEMID]}")
         .get();
 
     if (docRef.data() == null || docRef.data()!.isEmpty) {
@@ -569,13 +576,15 @@ class Chat {
   createChattingRoom({required Map<String, dynamic> item}) async {
     await _firestore
         .collection(_baseUrl)
-        .doc("${myUser.getUid}_${item[UID]}_${item[ITEMID]}")
+        .doc("${myUser.getUid}_${item[ITEMID]}")
         .set({
       SENDER: myUser.getNickname,
       SENDER_UID: myUser.getUid,
       RECEIVER: item[REGISTER],
       RECEIVER_UID: item[UID],
       ITEMID: item[ITEMID],
+      TITLE: item[TITLE],
+      IMAGE_URI: item[IMAGE_URI],
     });
   }
 }

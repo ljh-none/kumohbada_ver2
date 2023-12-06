@@ -138,6 +138,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   await _isNicknameChanged()
                       ? _updateNickname()
                       : _showPopup("이미 존재하는 닉네임입니다", false);
+                  setState(() {});
                 },
                 child: const Text('닉네임 변경'),
               ),

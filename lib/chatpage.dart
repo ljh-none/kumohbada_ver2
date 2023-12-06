@@ -13,6 +13,10 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   Chat _chat = Chat();
+  Item _item = Item();
+  MyUser _myUser = MyUser.instance;
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: _chat.showChatList(),
@@ -21,19 +25,22 @@ class _ChatPageState extends State<ChatPage> {
           return ListView.separated(
             itemBuilder: (BuildContext context, index) {
               return GestureDetector(
-                onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (BuildContext context) {
-                    return ChatSubPage(
-                        snapshot.data[index], snapshot.data[index][SENDER_UID]);
-                  }));
+                onTap: () async {
+                  Map<String, dynamic>? item = await _item.getSingleItem(
+                      itemId: snapshot.data[index][ITEMID]);
+                  if (item == null) return;
+
+                  gotoChatting(item, snapshot, index);
                 },
                 child: ListTile(
-                  leading: Icon(Icons.chat), // Add an icon for each chat item
-                  title: Text(snapshot.data[index][RECEIVER]),
-                  subtitle: Text(
-                      'Last message...'), // Add a placeholder for the last message
-                ),
+                    leading: Image.network(snapshot.data[index]
+                        [IMAGE_URI]), // Add an icon for each chat item
+                    title: Text(snapshot.data[index][TITLE],
+                        style: const TextStyle(fontSize: 20)),
+                    subtitle:
+                        snapshot.data[index][RECEIVER_UID] == _myUser.getUid
+                            ? Text(snapshot.data[index][RECEIVER])
+                            : Text(snapshot.data[index][SENDER])),
               );
             },
             separatorBuilder: _buildSeparator,
@@ -48,10 +55,18 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
+  Future<dynamic> gotoChatting(
+      Map<String, dynamic> item, AsyncSnapshot<dynamic> snapshot, int index) {
+    return Navigator.push(context,
+        MaterialPageRoute(builder: (BuildContext context) {
+      return ChatSubPage(item, snapshot.data[index][SENDER_UID]);
+    }));
+  }
+
   Widget _buildSeparator(BuildContext context, index) {
     return Divider(
       height: 1,
-      color: Color.fromARGB(136, 73, 73, 73)!.withOpacity(1),
+      color: const Color.fromARGB(136, 73, 73, 73).withOpacity(1),
       indent: 16, // 시작 부분의 공백
       endIndent: 16, // 끝 부분의 공백
     );
@@ -94,7 +109,7 @@ class _ChatSubPageState extends State<ChatSubPage> {
       itemBuilder: (context, index) {
         var doc = snapshot.data!.docs[index];
         var data = doc.data() as Map<String, dynamic>;
-        if (data[SENDER] == _myUser.getNickname) {
+        if (data[SENDER_UID] == _myUser.getUid) {
           return Row(children: [
             const Spacer(),
             Container(
@@ -137,20 +152,15 @@ class _ChatSubPageState extends State<ChatSubPage> {
 
   @override
   Widget build(BuildContext context) {
-    //navigator push로 정보를 가져온다. 어떤 방식이든 상관없다.
-    //아이템 정보 전체이든, 등록자 uid이든 상대방 유저의 uid만 있으면 됨.
-    //상대방 uid를 otherUid 파라미터에 넣으면 채팅방 생성 및 로드 가능.
-
     return Scaffold(
-      appBar: AppBar(title: Text("Chat")),
+      appBar: AppBar(title: Text(widget._item![REGISTER])),
       body: StreamBuilder(
         stream: _chat.getChatStream(
             item: widget._item!, senderUid: widget._senderUid!),
         builder: buildChatContent,
       ),
       bottomNavigationBar: Padding(
-        padding:
-            const EdgeInsets.all(10.0), // Add padding around the text field
+        padding: const EdgeInsets.all(10.0),
         child: Row(children: [
           Expanded(
             child: TextField(
@@ -162,7 +172,6 @@ class _ChatSubPageState extends State<ChatSubPage> {
                 filled: true,
               ),
               onSubmitted: (text) {
-                // Send the message when the enter key is pressed
                 _chat.sendMessage(msg: txtcontrollor.text);
                 txtcontrollor.clear();
               },
@@ -173,7 +182,7 @@ class _ChatSubPageState extends State<ChatSubPage> {
             onPressed: () {
               _chat.sendMessage(msg: txtcontrollor.text);
               txtcontrollor.clear();
-            }, // Use arrow icon instead of text
+            },
             style: ButtonStyle(
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                 RoundedRectangleBorder(
