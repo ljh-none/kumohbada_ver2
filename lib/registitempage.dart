@@ -44,9 +44,6 @@ class _RegistItemPageState extends State<RegistItemPage> {
   //async gap 경고에 때문에 함수로 작성.
   _returnToHomePage() => Navigator.pop(context, true);
 
-  // 카테고리를 선택하는 함수
-  void _selectCategory() {}
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;

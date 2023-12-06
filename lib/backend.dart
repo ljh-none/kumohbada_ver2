@@ -408,6 +408,45 @@ class Item {
     await docRef.delete();
   }
 
+  //아이템 수정
+  updateItem(
+      {required String itemId,
+      required XFile image,
+      required String title,
+      required String category,
+      required int price,
+      required String description}) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection(_itemUri)
+        .where(ITEMID, isEqualTo: itemId)
+        .get();
+    DocumentReference docRef = snapshot.docs.first.reference;
+
+    String url = await _registImage(image);
+    String? location = _myUser.getLocation;
+    String? nickname = _myUser.getNickname;
+    String? uid = _myUser.getUid;
+    if (location == null || nickname == null || uid == null) {
+      false;
+    }
+
+    Map<String, dynamic> item = {
+      UID: uid, //등록자의 uid
+      ITEMID: _getUuid(),
+      IMAGE_URI: url,
+      TITLE: title,
+      CATEGORY: category,
+      PRICE: price,
+      DESCRIPTION: description,
+      TIMESTAMP: FieldValue.serverTimestamp(),
+      REGISTER: nickname,
+      LOCATION: location,
+    };
+
+    await docRef.update(item);
+    return true;
+  }
+
   //내 아이템만 출력
   Future<List<Map<String, dynamic>>> getMyItems() async {
     List<Map<String, dynamic>> list = [];
