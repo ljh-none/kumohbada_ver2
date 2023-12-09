@@ -382,6 +382,22 @@ class Item {
     return true;
   }
 
+  //아이템 삭제
+  deleteItem({required String itemId}) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection(_itemUri)
+        .where(ITEMID, isEqualTo: itemId)
+        .get();
+
+    DocumentReference docRef = snapshot.docs.first.reference;
+    Map<String, dynamic> temp =
+        snapshot.docs.first.data() as Map<String, dynamic>;
+
+    await _storage.ref().child(temp[IMAGE_URI]).delete();
+    docRef.delete();
+    return;
+  }
+
   //아이템 등록. regist페이지에서 사용
   registItem(
       {required XFile image,
@@ -568,6 +584,19 @@ class Chat {
     list.addAll(await _getSenderIsMe());
     list.addAll(await _getReceiverIsMe());
     return list;
+  }
+
+  //한 아이템에 대한 채팅 모두 삭제
+  deleteChat({required String itemId}) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection(_baseUrl)
+        .where(ITEMID, isEqualTo: itemId)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      _firestore.collection(_baseUrl).doc(doc.id).delete();
+    }
+    return;
   }
 
   //채팅창 리스트에서 요소 클릭 시 채팅방으로 넘어갈 때

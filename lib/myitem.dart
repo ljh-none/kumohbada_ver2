@@ -14,6 +14,7 @@ class MyItemPage extends StatefulWidget {
 
 class _MyItemPageState extends State<MyItemPage> {
   Item _item = Item();
+  Chat _chat = Chat();
 
   @override
   Widget build(BuildContext context) {
@@ -90,6 +91,15 @@ class _MyItemPageState extends State<MyItemPage> {
                                   ),
                                 ],
                               ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                await _chat.deleteChat(
+                                    itemId: snapshot.data![index][ITEMID]);
+                                await _item.deleteItem(
+                                    itemId: snapshot.data![index][ITEMID]);
+                              },
+                              icon: const Icon(Icons.delete),
                             ),
                           ],
                         ),
