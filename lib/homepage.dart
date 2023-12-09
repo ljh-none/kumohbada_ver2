@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kumohbada_ver2/chatpage.dart';
+import 'package:kumohbada_ver2/registitempage.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -241,15 +242,16 @@ class _HomeSubPageState extends State<HomeSubPage> {
                     ElevatedButton(
                       onPressed: () async {
                         if (_myUser.getUid == widget.item[UID]) {
-                          return;
+                          gotoModifyPage(widget.item);
+                        } else {
+                          var result =
+                              await _chat.checkRoomExist(item: widget.item);
+                          if (!result) {
+                            //챗방이 없을 때
+                            await _chat.createChattingRoom(item: widget.item);
+                          }
+                          gotoChatting();
                         }
-                        var result =
-                            await _chat.checkRoomExist(item: widget.item);
-                        if (!result) {
-                          //챗방이 없을 때
-                          await _chat.createChattingRoom(item: widget.item);
-                        }
-                        gotoChatting();
                       },
                       child: widget.item[UID] == _myUser.getUid
                           ? const Text("수정하기")
@@ -268,6 +270,15 @@ class _HomeSubPageState extends State<HomeSubPage> {
       context,
       MaterialPageRoute(builder: (BuildContext context) {
         return ChatSubPage(widget.item, _myUser.getUid);
+      }),
+    );
+  }
+
+  gotoModifyPage(Map<String, dynamic> item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (BuildContext context) {
+        return ModifyItemPage(item);
       }),
     );
   }
