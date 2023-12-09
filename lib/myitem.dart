@@ -30,6 +30,7 @@ class _MyItemPageState extends State<MyItemPage> {
                 itemBuilder: (BuildContext context, int index) {
                   DateTime date = snapshot.data![index][TIMESTAMP].toDate();
                   String formattedTime = timeago.format(date, locale: 'ko');
+
                   return Card(
                     elevation: 0,
                     child: InkWell(

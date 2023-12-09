@@ -39,8 +39,8 @@ class _ChatPageState extends State<ChatPage> {
                         style: const TextStyle(fontSize: 20)),
                     subtitle:
                         snapshot.data[index][RECEIVER_UID] == _myUser.getUid
-                            ? Text(snapshot.data[index][RECEIVER])
-                            : Text(snapshot.data[index][SENDER])),
+                            ? Text(snapshot.data[index][SENDER])
+                            : Text(snapshot.data[index][RECEIVER])),
               );
             },
             separatorBuilder: _buildSeparator,

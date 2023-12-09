@@ -232,7 +232,7 @@ class _HomeSubPageState extends State<HomeSubPage> {
             bottomNavigationBar: BottomAppBar(
               elevation: 0,
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(10.0),
                 child: Row(
                   children: [
                     Text(
@@ -249,14 +249,11 @@ class _HomeSubPageState extends State<HomeSubPage> {
                           //챗방이 없을 때
                           await _chat.createChattingRoom(item: widget.item);
                         }
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (BuildContext context) {
-                            return ChatSubPage(widget.item, _myUser.getUid);
-                          }),
-                        );
+                        gotoChatting();
                       },
-                      child: const Text("채팅하기"),
+                      child: widget.item[UID] == _myUser.getUid
+                          ? const Text("수정하기")
+                          : const Text("채팅하기"),
                     )
                   ],
                 ),
@@ -264,5 +261,14 @@ class _HomeSubPageState extends State<HomeSubPage> {
             ),
           );
         });
+  }
+
+  gotoChatting() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (BuildContext context) {
+        return ChatSubPage(widget.item, _myUser.getUid);
+      }),
+    );
   }
 }
