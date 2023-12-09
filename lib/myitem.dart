@@ -98,6 +98,7 @@ class _MyItemPageState extends State<MyItemPage> {
                                     itemId: snapshot.data![index][ITEMID]);
                                 await _item.deleteItem(
                                     itemId: snapshot.data![index][ITEMID]);
+                                setState(() {});
                               },
                               icon: const Icon(Icons.delete),
                             ),
