@@ -390,10 +390,6 @@ class Item {
         .get();
 
     DocumentReference docRef = snapshot.docs.first.reference;
-    Map<String, dynamic> temp =
-        snapshot.docs.first.data() as Map<String, dynamic>;
-
-    await _storage.ref().child(temp[IMAGE_URI]).delete();
     docRef.delete();
     return;
   }
